@@ -1,3 +1,4 @@
+
 /* =========================
    Reset and base styles
 ========================= */
@@ -9,8 +10,8 @@
 
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #E5E5E5; /* lighter gray */
-  color: #000000; /* black text */
+  background-color: #E5E5E5;
+  color: #000000;
   line-height: 1.6;
 }
 
@@ -20,21 +21,21 @@ body {
 nav {
   position: sticky;
   top: 0;
-  background: #F5F0E1; /* lighter brown */
+  background: #F5F0E1;
   display: flex;
   justify-content: space-between;
   padding: 1rem 2rem;
   align-items: center;
   z-index: 100;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  flex-wrap: wrap; /* ensure nav items wrap on smaller screens */
+  flex-wrap: wrap;
 }
 
 nav .logo {
   font-weight: bold;
   color: #000000;
   font-size: 1.6rem;
-  white-space: nowrap; /* prevent wrapping */
+  white-space: nowrap;
 }
 
 nav a {
@@ -57,8 +58,8 @@ nav a:hover {
   justify-content: center;
   align-items: center;
   padding: 4rem 2rem;
-  background: linear-gradient(to right, #E5E5E5, #F5F0E1); /* gradient gray → brown */
-  flex-wrap: wrap; /* responsive */
+  background: linear-gradient(to right, #E5E5E5, #F5F0E1);
+  flex-wrap: wrap;
 }
 
 .hero .left-img img,
@@ -73,13 +74,13 @@ nav a:hover {
   text-align: center;
   font-size: 1.5rem;
   font-weight: bold;
-  color: #000000; /* black text */
+  color: #000000;
 }
 
 .hero .subtitle {
   font-size: 1rem;
   font-weight: normal;
-  color: #000000; /* black text */
+  color: #000000;
   margin-top: 0.5rem;
 }
 
@@ -90,7 +91,7 @@ section h2 {
   text-align: center;
   font-size: 2rem;
   margin-bottom: 2rem;
-  color: #000000; /* black text */
+  color: #000000;
   position: relative;
 }
 
@@ -99,7 +100,7 @@ section h2::after {
   display: block;
   width: 80px;
   height: 4px;
-  background: #A89F91; /* soft brown underline */
+  background: #A89F91;
   margin: 0.5rem auto 0;
   border-radius: 2px;
 }
@@ -111,18 +112,18 @@ section h2::after {
   max-width: 900px;
   margin: 0 auto 4rem;
   padding: 0 1rem;
-  background-color: #F5F0E1; /* lighter brown */
+  background-color: #F5F0E1;
   border-radius: 20px;
   box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
 #daily-affirmation {
-  background: #E5E5E5; /* lighter gray */
+  background: #E5E5E5;
   padding: 1.5rem;
   margin-top: 2rem;
   border-radius: 15px;
   text-align: center;
-  color: #000000; /* black text */
+  color: #000000;
   font-weight: 500;
 }
 
@@ -158,7 +159,7 @@ section h2::after {
 }
 
 .date-card {
-  background: #F5F0E1; /* lighter brown */
+  background: #F5F0E1;
   padding: 1rem;
   border-radius: 15px;
   width: 250px;
@@ -178,7 +179,7 @@ section h2::after {
 
 .date-card h3,
 .date-card p {
-  color: #000000; /* black text */
+  color: #000000;
 }
 
 /* =========================
@@ -192,7 +193,7 @@ section h2::after {
 }
 
 .song {
-  background: #E5E5E5; /* lighter gray */
+  background: #E5E5E5;
   padding: 1rem;
   border-radius: 15px;
   text-align: center;
@@ -201,7 +202,7 @@ section h2::after {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem; /* fixes overlapping icons */
+  gap: 0.5rem;
 }
 
 .song img {
@@ -212,12 +213,11 @@ section h2::after {
 .song h3,
 .song p {
   font-size: 1.1rem;
-  color: #000000; /* black text */
+  color: #000000;
 }
 
-/* Fix overlapping audio controls */
 .song audio {
-  width: 100%;       /* full width inside song card */
+  width: 100%;
   max-width: 100%;
   display: block;
   margin-top: 0.3rem;
@@ -247,8 +247,8 @@ section h2::after {
 ========================= */
 footer {
   margin-top: 2rem;
-  background-color: #D3D3D3; /* light gray footer */
-  color: #000000; /* black text */
+  background-color: #D3D3D3;
+  color: #000000;
   padding: 1.5rem 2rem;
   text-align: center;
   font-size: 0.9rem;
@@ -258,34 +258,33 @@ footer {
 
 /* =========================
    Responsive
+   (keeps horizontal laptop layout)
 ========================= */
 @media(max-width: 768px) {
+
+  /* Keep hero horizontal */
   .hero {
-    flex-direction: column;
+    flex-direction: row;
+    overflow-x: auto;
   }
 
-  .hero .left-img, .hero .right-img {
-    margin-bottom: 1rem;
+  /* Keep gallery rows instead of stacking */
+  .gallery {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Fix overlapping audio icons on small screens */
-  .song .audio-icons {
-    display: flex;
-    flex-wrap: wrap;       /* allows icons to move to next line if needed */
-    gap: 0.5rem;           /* space between icons */
-    justify-content: center; /* keep icons centered */
+  /* Keep music cards horizontal */
+  #playlist {
+    grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Nav links wrap on small screens */
-  nav div {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+  /* Keep spotify rows */
+  .spotify-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  nav {
     flex-wrap: wrap;
-    margin-top: 0.5rem;
   }
 
-  nav a {
-    margin: 0.3rem 1rem; /* reduce spacing */
-  }
 }
