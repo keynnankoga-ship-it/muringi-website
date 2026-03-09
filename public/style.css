@@ -1,207 +1,268 @@
-/* -------------------
-   General Body
-------------------- */
-body {
+/* =========================
+   Reset and base styles
+========================= */
+* {
   margin: 0;
-  font-family: Helvetica, Arial, sans-serif;
-  background: #d8d4c8;
-  color: #333;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* -------------------
-   Navigation
-------------------- */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #fff9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* =========================
+   Navbar
+========================= */
 nav {
+  position: sticky;
+  top: 0;
+  background: #ff6b81;
   display: flex;
   justify-content: space-between;
+  padding: 1rem 2rem;
   align-items: center;
-  padding: 20px 60px;
-  background: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+nav .logo {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.6rem;
 }
 
 nav a {
-  margin-left: 20px;
+  color: #fff;
   text-decoration: none;
-  color: #000;
-  font-weight: bold;
+  margin-left: 1.5rem;
+  font-weight: 500;
+  transition: 0.3s;
 }
 
 nav a:hover {
-  color: #ff3366;
+  color: #ffd1dc;
 }
 
-/* -------------------
-   Hero Section
-------------------- */
+/* =========================
+   Hero Section (keep design)
+========================= */
 .hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 80px;
-  gap: 20px;
+  padding: 4rem 2rem;
+  background: linear-gradient(to right, #ffe6f0, #fff9f9);
 }
 
-.left-img img {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 12px;
+.hero .left-img img,
+.hero .right-img img {
+  width: 250px;
+  border-radius: 20px;
+  object-fit: cover;
 }
 
-.right-img img {
-  width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
-}
-
-.center-text {
+.hero .center-text {
+  margin: 0 2rem;
   text-align: center;
-  letter-spacing: 4px;
-  font-size: 20px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff4d6d;
 }
 
-/* -------------------
-   Gallery Section
-------------------- */
+.hero .subtitle {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #ff7f94;
+  margin-top: 0.5rem;
+}
+
+/* =========================
+   Section Titles
+========================= */
+section h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #ff4d6d;
+  position: relative;
+}
+
+section h2::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: #ff7f94;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+/* =========================
+   Home / Daily Affirmation
+========================= */
+#home .home {
+  max-width: 900px;
+  margin: 0 auto 4rem;
+  padding: 0 1rem;
+  background-color: #fff0f5;
+  border-radius: 20px;
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+#daily-affirmation {
+  background: #ffe6f0;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  color: #ff4d6d;
+  font-weight: 500;
+}
+
+/* =========================
+   Gallery
+========================= */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  padding: 80px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 0 2rem 4rem;
 }
 
 .gallery img {
   width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 15px;
+  transition: transform 0.3s;
 }
 
-/* -------------------
-   Date Ideas
-------------------- */
+.gallery img:hover {
+  transform: scale(1.05);
+}
+
+/* =========================
+   Date Ideas Section
+========================= */
 #dateIdeas {
-  padding: 80px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 0 2rem 4rem;
 }
 
 .date-card {
-  background: white;
-  padding: 30px;
-  margin-bottom: 30px;
-  border-radius: 12px;
+  background: #ffe6f0;
+  padding: 1rem;
+  border-radius: 15px;
+  width: 250px;
   box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  transition: 0.3s;
 }
 
-.date-photos img {
-  width: 150px;
-  margin: 10px;
-  border-radius: 8px;
+.date-card:hover {
+  transform: translateY(-5px);
 }
 
-/* -------------------
-   Playlist / Songs Section
-------------------- */
+.date-card img {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+}
+
+.date-card h3 {
+  color: #ff4d6d;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.date-card p {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+/* =========================
+   Music Section
+========================= */
 #playlist {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 80px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  padding: 0 2rem 4rem;
 }
 
 .song {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
+  background: #ffe6f0;
+  padding: 1rem;
+  border-radius: 15px;
+  text-align: center;
   box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  transition: 0.3s;
+}
+
+.song:hover {
+  transform: translateY(-5px);
 }
 
 .song img {
-  width: 100%;
-  border-radius: 12px;
-  margin-bottom: 10px;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
 }
 
-.song h3,
+.song h3 {
+  color: #ff4d6d;
+  font-size: 1.1rem;
+}
+
 .song p {
-  text-align: center;
-  margin: 5px 0;
+  font-size: 0.9rem;
 }
 
-.song audio {
-  width: 100%; /* Ensure audio player fits the card */
-  margin-top: 10px;
-}
-
-/* -------------------
-   Spotify Section
-------------------- */
+/* =========================
+   Spotify Grid
+========================= */
 .spotify-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
-  padding: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 0 2rem 4rem;
 }
 
 .spotify-grid iframe {
-  width: 100%;
-  border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  border-radius: 15px;
+  transition: transform 0.3s;
 }
 
-/* -------------------
-   Daily Affirmation
-------------------- */
-#daily-affirmation {
-  margin: 40px auto;
-  padding: 30px;
-  max-width: 700px;
-  background-color: #ffe6f0;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-  text-align: center;
+.spotify-grid iframe:hover {
+  transform: scale(1.02);
 }
 
-#daily-affirmation h2 {
-  font-size: 2em;
-  margin-bottom: 15px;
-  color: #ff3366;
-}
-
-#daily-affirmation p {
-  font-size: 1.2em;
-  line-height: 1.6;
-  color: #333;
-}
-
-/* -------------------
+/* =========================
    Footer
-------------------- */
+========================= */
 footer {
-  background-color: #f2f2f2;
-  padding: 20px;
+  margin-top: 2rem;
+  background-color: #ffb6c1;
+  color: #fff;
+  padding: 1.5rem 2rem;
   text-align: center;
-  font-size: 14px;
-  color: #555;
-  margin-top: 40px;
+  font-size: 0.9rem;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
 }
 
-/* -------------------
-   Responsive Adjustments
-------------------- */
-@media (max-width: 900px) {
+/* =========================
+   Responsive
+========================= */
+@media(max-width: 768px) {
   .hero {
-    grid-template-columns: 1fr;
-    padding: 40px 20px;
+    flex-direction: column;
   }
 
-  .center-text {
-    font-size: 18px;
-  }
-
-  #playlist,
-  .gallery {
-    padding: 40px 20px;
+  .hero .left-img, .hero .right-img {
+    margin-bottom: 1rem;
   }
 }
