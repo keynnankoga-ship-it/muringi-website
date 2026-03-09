@@ -99,7 +99,8 @@ loadSongs();
 // ---------------------------
 async function showDailyAffirmation() {
   try {
-    const response = await fetch(`${BACKEND_URL}/data/affirmations.json`);
+    // Adjust path relative to your HTML file
+    const response = await fetch('data/affirmations.json');
     const affirmations = await response.json();
 
     const today = new Date();
@@ -110,7 +111,11 @@ async function showDailyAffirmation() {
     const month = monthNames[today.getMonth()];
     const day = today.getDate();
 
-    const affirmation = affirmations[month][day] || "Have a wonderful day!";
+    // Safely get today's affirmation
+    const affirmation = affirmations[month] && affirmations[month][day] 
+      ? affirmations[month][day] 
+      : "Have a wonderful day!";
+
     document.getElementById('affirmation-text').innerText = affirmation;
   } catch (err) {
     console.error("Error loading affirmation:", err);
