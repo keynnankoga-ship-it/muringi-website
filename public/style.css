@@ -27,12 +27,14 @@ nav {
   align-items: center;
   z-index: 100;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  flex-wrap: wrap; /* ensure nav items wrap on smaller screens */
 }
 
 nav .logo {
   font-weight: bold;
   color: #000000;
   font-size: 1.6rem;
+  white-space: nowrap; /* prevent wrapping */
 }
 
 nav a {
@@ -56,6 +58,7 @@ nav a:hover {
   align-items: center;
   padding: 4rem 2rem;
   background: linear-gradient(to right, #E5E5E5, #F5F0E1); /* gradient gray → brown */
+  flex-wrap: wrap; /* responsive */
 }
 
 .hero .left-img img,
@@ -212,6 +215,14 @@ section h2::after {
   color: #000000; /* black text */
 }
 
+/* Fix overlapping audio controls */
+.song audio {
+  width: 100%;       /* full width inside song card */
+  max-width: 100%;
+  display: block;
+  margin-top: 0.3rem;
+}
+
 /* =========================
    Spotify Grid
 ========================= */
@@ -256,11 +267,25 @@ footer {
   .hero .left-img, .hero .right-img {
     margin-bottom: 1rem;
   }
-/* Fix overlapping audio icons only */
-.song .audio-icons {
-  display: flex;
-  flex-wrap: wrap;       /* allows icons to move to next line if needed */
-  gap: 0.5rem;           /* space between icons */
-  justify-content: center; /* keep icons centered */
+
+  /* Fix overlapping audio icons on small screens */
+  .song .audio-icons {
+    display: flex;
+    flex-wrap: wrap;       /* allows icons to move to next line if needed */
+    gap: 0.5rem;           /* space between icons */
+    justify-content: center; /* keep icons centered */
+  }
+
+  /* Nav links wrap on small screens */
+  nav div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  nav a {
+    margin: 0.3rem 1rem; /* reduce spacing */
   }
 }
