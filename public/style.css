@@ -256,4 +256,11 @@ footer {
   .hero .left-img, .hero .right-img {
     margin-bottom: 1rem;
   }
+/* Fix overlapping audio icons only */
+.song .audio-icons {
+  display: flex;
+  flex-wrap: wrap;       /* allows icons to move to next line if needed */
+  gap: 0.5rem;           /* space between icons */
+  justify-content: center; /* keep icons centered */
+  }
 }
