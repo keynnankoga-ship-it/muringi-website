@@ -1,3 +1,10 @@
+// /public/script.js
+
+// ---------------------------
+// Backend URL
+// ---------------------------
+const BACKEND_URL = "https://hera-9pxh.onrender.com"; // Replace with your Render backend
+
 // ---------------------------
 // Date Ideas Section
 // ---------------------------
@@ -5,7 +12,7 @@ const dateContainer = document.getElementById("dateIdeas");
 
 async function loadDateIdeas() {
   try {
-    const res = await fetch("/dateIdeas");
+    const res = await fetch(`${BACKEND_URL}/dateIdeas`);
     const ideas = await res.json();
 
     dateContainer.innerHTML = "";
@@ -26,7 +33,7 @@ async function loadDateIdeas() {
       if (idea.photos && idea.photos.length > 0) {
         idea.photos.forEach(photo => {
           const img = document.createElement("img");
-          img.src = photo;
+          img.src = `${BACKEND_URL}${photo}`; // prefix photo path with backend URL
           photoDiv.appendChild(img);
         });
       }
@@ -43,7 +50,7 @@ async function uploadPhoto(event, id) {
   const formData = new FormData();
   formData.append("photo", file);
 
-  await fetch("/uploadDatePhoto/" + id, {
+  await fetch(`${BACKEND_URL}/uploadDatePhoto/${id}`, {
     method: "POST",
     body: formData
   });
@@ -54,13 +61,12 @@ async function uploadPhoto(event, id) {
 // Initialize date ideas
 loadDateIdeas();
 
-
 // ---------------------------
 // Music / Playlist Section
 // ---------------------------
 async function loadSongs() {
   try {
-    const res = await fetch("/songs");
+    const res = await fetch(`${BACKEND_URL}/songs`);
     const songs = await res.json();
 
     const playlist = document.getElementById("playlist");
@@ -70,12 +76,12 @@ async function loadSongs() {
       const div = document.createElement("div");
       div.className = "song";
       div.innerHTML = `
-        <img src="${song.cover || ""}" width="100%" alt="${song.title || ""}">
+        <img src="${BACKEND_URL}${song.cover || ""}" width="100%" alt="${song.title || ""}">
         <h3>${song.title || ""}</h3>
         <p>${song.artist || ""}</p>
         <p>${song.reason || ""}</p>
         <audio controls>
-          <source src="${song.file}" type="audio/mp3">
+          <source src="${BACKEND_URL}${song.file}" type="audio/mp3">
         </audio>
       `;
       playlist.appendChild(div);
@@ -88,13 +94,12 @@ async function loadSongs() {
 // Initialize songs
 loadSongs();
 
-
 // ---------------------------
 // Daily Affirmation Section
 // ---------------------------
 async function showDailyAffirmation() {
   try {
-    const response = await fetch('data/affirmations.json');
+    const response = await fetch(`${BACKEND_URL}/data/affirmations.json`);
     const affirmations = await response.json();
 
     const today = new Date();
@@ -116,9 +121,8 @@ async function showDailyAffirmation() {
 // Initialize daily affirmation
 showDailyAffirmation();
 
-
 // ---------------------------
-// Push Notifications Setup
+// Firebase Push Notifications
 // ---------------------------
 
 // Firebase config (replace with your own)
@@ -130,50 +134,22 @@ const firebaseConfig = {
   appId: "1:672701127341:web:29174119759439bbba8424"
 };
 
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-
-// Request permission for notifications
-Notification.requestPermission().then(permission => {
-  if (permission === 'granted') {
-    messaging.getToken({ vapidKey: 'BPzA6p7pueH8JWNpy5RDhPgbG3npPjg8fKNVVFm_QRdm5_trSUZvHaGFcjug4ZB3jRT6P1DK__6v9mvI2enM6H0' }).then(token => {
-      console.log("FCM Token:", token);
-      // Send token to your backend to schedule notifications
-    });
-  }
-});
-
-// Listen for foreground notifications
-messaging.onMessage(payload => {
-  new Notification(payload.notification.title, {
-    body: payload.notification.body,
-    icon: payload.notification.icon || '/assets/icon.png'
-  });
-});
-
-// /public/script.js
 // Initialize Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyB1zmsXUaKHiFjnpUg1ddanoqaRSooI4aI",
-  authDomain: "muringi-website.firebaseapp.com",
-  projectId: "muringi-website",
-  messagingSenderId: "672701127341",
-  appId: "1:672701127341:web:29174119759439bbba8424"
-};
-
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-// Request permission and send token to server
+// Request permission and send token to backend
 async function requestNotificationPermission() {
   const permission = await Notification.requestPermission();
   if (permission === 'granted') {
     console.log('Notification permission granted.');
-    const token = await messaging.getToken({ vapidKey: 'BPzA6p7pueH8JWNpy5RDhPgbG3npPjg8fKNVVFm_QRdm5_trSUZvHaGFcjug4ZB3jRT6P1DK__6v9mvI2enM6H0' });
+    const token = await messaging.getToken({
+      vapidKey: 'BPzA6p7pueH8JWNpy5RDhPgbG3npPjg8fKNVVFm_QRdm5_trSUZvHaGFcjug4ZB3jRT6P1DK__6v9mvI2enM6H0'
+    });
     console.log('FCM Token:', token);
 
-    // Send token to backend
-    await fetch('http://localhost:5000/save-token', {
+    // Send token to your live backend
+    await fetch(`${BACKEND_URL}/save-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token })
@@ -185,14 +161,10 @@ async function requestNotificationPermission() {
 
 requestNotificationPermission();
 
-// Optional: display today's affirmation in page
-async function loadDailyAffirmation() {
-  const res = await fetch('../data/affirmations.json');
-  const affirmations = await res.json();
-  const today = new Date().toISOString().split('T')[0];
-  const todayAffirmation = affirmations.find(a => a.date === today);
-  document.getElementById('affirmation').textContent =
-    todayAffirmation ? todayAffirmation.affirmation : "Stay positive today!";
-}
-
-loadDailyAffirmation();
+// Listen for foreground notifications
+messaging.onMessage(payload => {
+  new Notification(payload.notification.title, {
+    body: payload.notification.body,
+    icon: payload.notification.icon || '/assets/icon.png'
+  });
+});
