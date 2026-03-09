@@ -203,28 +203,4 @@ color: black !important;
 color: black !important;
 }
 
-/* --- AUDIO PLAYER FIX --- */
-
-.music-item {
-margin-bottom: 30px;
-}
-
-.music-item audio {
-width: 100%;
-display: block;
-margin-top: 10px;
-}
-
-/* --- NAVBAR FIT FIX --- */
-
-nav {
-flex-wrap: wrap;
-padding-left: 25px;
-padding-right: 25px;
-}
-
-.logo {
-margin-right: 20px;
-}
-
 }
