@@ -1,92 +1,74 @@
-const express = require("express")
-const mongoose = require("mongoose")
-const multer = require("multer")
-const cors = require("cors")
-const path = require("path")
+// server.js
+const express = require("express");
+const mongoose = require("mongoose");
+const multer = require("multer");
+const cors = require("cors");
+const path = require("path");
 
-const app = express()
+const app = express();
 
-app.use(cors())
-app.use(express.json())
+// --- Middleware
+app.use(cors());
+app.use(express.json());
 
-app.use(express.static("public"))
-app.use("/uploads",express.static("uploads"))
-app.use("/music",express.static("music"))
+app.use(express.static("public"));
+app.use("/uploads", express.static("uploads"));
+app.use("/music", express.static("music"));
 
-mongoose.connect("mongodb://127.0.0.1:27017/romanticSite")
+// --- Connect to MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected ✅"))
+  .catch(err => console.error("MongoDB connection error ❌:", err));
 
-const DateIdea = require("./models/DateIdea")
-const Song = require("./models/Song")
+// --- Models
+const DateIdea = require("./models/DateIdea");
+const Song = require("./models/Song");
 
-/* FILE STORAGE */
-
+// --- File storage for uploads
 const storage = multer.diskStorage({
- destination:"uploads/",
- filename:(req,file,cb)=>{
-  cb(null,Date.now()+"-"+file.originalname)
- }
-})
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+const upload = multer({ storage });
 
-const upload = multer({storage})
+// --- Routes
 
-/* GET DATE IDEAS */
+// Get all date ideas
+app.get("/dateIdeas", async (req, res) => {
+  const ideas = await DateIdea.find();
+  res.json(ideas);
+});
 
-app.get("/dateIdeas",async(req,res)=>{
+// Add a new date idea
+app.post("/dateIdeas", async (req, res) => {
+  const idea = new DateIdea(req.body);
+  await idea.save();
+  res.json(idea);
+});
 
-const ideas = await DateIdea.find()
+// Upload a photo for a date idea
+app.post("/uploadDatePhoto/:id", upload.single("photo"), async (req, res) => {
+  const idea = await DateIdea.findById(req.params.id);
+  idea.photos.push("/uploads/" + req.file.filename);
+  await idea.save();
+  res.json(idea);
+});
 
-res.json(ideas)
+// Get all songs
+app.get("/songs", async (req, res) => {
+  const songs = await Song.find();
+  res.json(songs);
+});
 
-})
+// Add a new song
+app.post("/songs", async (req, res) => {
+  const song = new Song(req.body);
+  await song.save();
+  res.json(song);
+});
 
-/* ADD DATE IDEA */
-
-app.post("/dateIdeas",async(req,res)=>{
-
-const idea = new DateIdea(req.body)
-
-await idea.save()
-
-res.json(idea)
-
-})
-
-/* UPLOAD DATE PHOTO */
-
-app.post("/uploadDatePhoto/:id",upload.single("photo"),async(req,res)=>{
-
-const idea = await DateIdea.findById(req.params.id)
-
-idea.photos.push("/uploads/"+req.file.filename)
-
-await idea.save()
-
-res.json(idea)
-
-})
-
-/* SONG ROUTES */
-
-app.get("/songs",async(req,res)=>{
-
-const songs = await Song.find()
-
-res.json(songs)
-
-})
-
-app.post("/songs",async(req,res)=>{
-
-const song = new Song(req.body)
-
-await song.save()
-
-res.json(song)
-
-})
-
-app.listen(5000,()=>{
-
-console.log("Server running on port 5000")
-
-})
+// --- Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
