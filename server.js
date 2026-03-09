@@ -1,36 +1,59 @@
 // server.js
 const express = require("express");
 const mongoose = require("mongoose");
-const multer = require("multer");
 const cors = require("cors");
 const path = require("path");
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+
+require("dotenv").config();
 
 const app = express();
 
 // --- Middleware
 app.use(cors());
 app.use(express.json());
-
 app.use(express.static("public"));
 app.use("/uploads", express.static("uploads"));
 app.use("/music", express.static("music"));
 
-// --- Connect to MongoDB Atlas
+// --- MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected ✅"))
   .catch(err => console.error("MongoDB connection error ❌:", err));
 
-// --- Models
-const DateIdea = require("./models/DateIdea");
-const Song = require("./models/Song");
+// --- Mongoose Models
+const dateSchema = new mongoose.Schema({
+  title: String,
+  photos: { type: [String], default: [] } // Array of photo URLs
+});
+const DateIdea = mongoose.model("DateIdea", dateSchema);
 
-// --- File storage for uploads
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+const songSchema = new mongoose.Schema({
+  title: String,
+  artist: String,
+  reason: String,
+  cover: String,
+  file: String
+});
+const Song = mongoose.model("Song", songSchema);
+
+// --- Cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "dateideas",
+    allowed_formats: ["jpg", "jpeg", "png"]
   }
 });
+
 const upload = multer({ storage });
 
 // --- Routes
@@ -43,17 +66,26 @@ app.get("/dateIdeas", async (req, res) => {
 
 // Add a new date idea
 app.post("/dateIdeas", async (req, res) => {
-  const idea = new DateIdea(req.body);
+  const idea = new DateIdea({ title: req.body.title });
   await idea.save();
   res.json(idea);
 });
 
-// Upload a photo for a date idea
+// Upload a photo for a specific date idea
 app.post("/uploadDatePhoto/:id", upload.single("photo"), async (req, res) => {
-  const idea = await DateIdea.findById(req.params.id);
-  idea.photos.push("/uploads/" + req.file.filename);
-  await idea.save();
-  res.json(idea);
+  try {
+    const idea = await DateIdea.findById(req.params.id);
+    if (!idea) return res.status(404).json({ error: "Date idea not found" });
+
+    // Save Cloudinary URL
+    idea.photos.push(req.file.path); 
+    await idea.save();
+
+    res.json({ success: true, idea });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to upload photo" });
+  }
 });
 
 // Get all songs

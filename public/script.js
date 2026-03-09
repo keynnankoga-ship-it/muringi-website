@@ -9,7 +9,9 @@ const BACKEND_URL = "https://hera-9pxh.onrender.com"; // Replace with your Rende
 // Date Ideas Section
 // ---------------------------
 const dateContainer = document.getElementById("dateIdeas");
+const dateForm = document.getElementById("dateUploadForm");
 
+// Load all date ideas from backend
 async function loadDateIdeas() {
   try {
     const res = await fetch(`${BACKEND_URL}/dateIdeas`);
@@ -20,20 +22,25 @@ async function loadDateIdeas() {
     ideas.forEach(idea => {
       const div = document.createElement("div");
       div.className = "date-card";
+
+      // Display title, description, and upload input for multiple photos
       div.innerHTML = `
         <h3>${idea.title || ""}</h3>
         <p>${idea.description || ""}</p>
-        <input type="file" onchange="uploadPhoto(event,'${idea._id}')">
+        <input type="file" multiple onchange="uploadPhotos(event,'${idea._id}')">
         <div class="date-photos" id="photos-${idea._id}"></div>
       `;
       dateContainer.appendChild(div);
 
+      // Display all uploaded photos
       const photoDiv = document.getElementById("photos-" + idea._id);
-
       if (idea.photos && idea.photos.length > 0) {
         idea.photos.forEach(photo => {
           const img = document.createElement("img");
-          img.src = `${BACKEND_URL}${photo}`; // prefix photo path with backend URL
+          img.src = photo.startsWith("http") ? photo : `${BACKEND_URL}${photo}`;
+          img.style.width = "100%";
+          img.style.marginTop = "0.5rem";
+          img.style.borderRadius = "10px";
           photoDiv.appendChild(img);
         });
       }
@@ -43,20 +50,47 @@ async function loadDateIdeas() {
   }
 }
 
-async function uploadPhoto(event, id) {
-  const file = event.target.files[0];
-  if (!file) return;
+// Upload multiple photos for a single date idea
+async function uploadPhotos(event, id) {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
 
   const formData = new FormData();
-  formData.append("photo", file);
+  Array.from(files).forEach(file => formData.append("photos", file));
 
-  await fetch(`${BACKEND_URL}/uploadDatePhoto/${id}`, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const res = await fetch(`${BACKEND_URL}/uploadDatePhotos/${id}`, {
+      method: "POST",
+      body: formData
+    });
 
-  loadDateIdeas();
+    if (!res.ok) throw new Error("Upload failed");
+
+    loadDateIdeas(); // Refresh displayed photos
+  } catch (err) {
+    console.error("Error uploading photos:", err);
+  }
 }
+
+// Handle new date idea creation
+dateForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(dateForm);
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/upload-date`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) throw new Error("Upload failed");
+
+    dateForm.reset();
+    loadDateIdeas();
+  } catch (err) {
+    console.error("Error uploading date idea:", err);
+  }
+});
 
 // Initialize date ideas
 loadDateIdeas();
@@ -99,7 +133,6 @@ loadSongs();
 // ---------------------------
 async function showDailyAffirmation() {
   try {
-    // Adjust path relative to your HTML file
     const response = await fetch('data/affirmations.json');
     const affirmations = await response.json();
 
@@ -111,7 +144,6 @@ async function showDailyAffirmation() {
     const month = monthNames[today.getMonth()];
     const day = today.getDate();
 
-    // Safely get today's affirmation
     const affirmation = affirmations[month] && affirmations[month][day] 
       ? affirmations[month][day] 
       : "Have a wonderful day!";
@@ -129,8 +161,6 @@ showDailyAffirmation();
 // ---------------------------
 // Firebase Push Notifications
 // ---------------------------
-
-// Firebase config (replace with your own)
 const firebaseConfig = {
   apiKey: "AIzaSyB1zmsXUaKHiFjnpUg1ddanoqaRSooI4aI",
   authDomain: "muringi-website.firebaseapp.com",
@@ -139,11 +169,9 @@ const firebaseConfig = {
   appId: "1:672701127341:web:29174119759439bbba8424"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-// Request permission and send token to backend
 async function requestNotificationPermission() {
   const permission = await Notification.requestPermission();
   if (permission === 'granted') {
@@ -153,7 +181,6 @@ async function requestNotificationPermission() {
     });
     console.log('FCM Token:', token);
 
-    // Send token to your live backend
     await fetch(`${BACKEND_URL}/save-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -166,7 +193,6 @@ async function requestNotificationPermission() {
 
 requestNotificationPermission();
 
-// Listen for foreground notifications
 messaging.onMessage(payload => {
   new Notification(payload.notification.title, {
     body: payload.notification.body,

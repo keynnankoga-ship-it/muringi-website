@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
@@ -5,7 +7,7 @@
   <title>To and For A Gal Toto😍😌😌</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-------------Firebase Scripts for Notifications ------------->
+  <!-------------Firebase Scripts for Notifications ------------->  
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-messaging-compat.js"></script>
 </head>
@@ -99,121 +101,88 @@
     </div>
   </section>
 
-</section>
-
-
   <!------------------------- Gallery Section ----------------------->
+  <section id="gallery">
+    <h2>Gallery</h2>
+    <div class="gallery">
+      <img src="gallery1.jpeg">
+      <img src="gallery2.jpeg">
+      <img src="gallery3.jpeg">
+      <img src="gallery4.jpeg">
+      <img src="gallery5.jpeg">
+      <img src="gallery6.jpeg">
+      <img src="gallery7.jpeg">
+      <img src="gallery8.jpeg">
+      <img src="gallery9.jpeg">
+      <img src="gallery10.jpeg">
+      <img src="gallery11.jpeg">
+      <img src="gallery12.jpeg">
+      <img src="gallery13.jpeg">
+      <img src="gallery14.jpeg">
+      <img src="gallery15.jpeg">
+      <img src="gallery16.jpeg">
+      <img src="gallery17.jpeg">
+      <img src="gallery18.jpeg">
+      <img src="gallery19.jpeg">
+      <img src="gallery20.jpeg">
+      <img src="gallery21.jpeg">
+      <img src="gallery22.jpeg">
+      <img src="gallery23.jpeg">
+      <img src="gallery24.jpeg">
+    </div>
+  </section>
 
-<section id="gallery">
+  <!----------------------- Date Ideas Section ---------------------->
+  <section id="dates">
+    <h2>Date Ideas</h2>
 
-<h2>Gallery</h2>
+    <!-- Multi-photo Upload Form -->
+    <form id="dateUploadForm" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Date Idea Title" required>
+      <textarea name="description" placeholder="Description" required></textarea>
+      <input type="file" name="photos" multiple>
+      <button type="submit">Add Date Idea</button>
+    </form>
 
-<div class="gallery">
+    <!-- Container for dynamic date ideas -->
+    <div id="dateIdeas"></div>
+  </section>
 
-<img src="gallery1.jpeg">
-<img src="gallery2.jpeg">
-<img src="gallery3.jpeg">
-<img src="gallery4.jpeg">
-<img src="gallery5.jpeg">
-<img src="gallery6.jpeg">
-<img src="gallery7.jpeg">
-<img src="gallery8.jpeg">
-<img src="gallery9.jpeg">
-<img src="gallery10.jpeg">
-<img src="gallery11.jpeg">
-<img src="gallery12.jpeg">
-<img src="gallery13.jpeg">
-<img src="gallery14.jpeg">
-<img src="gallery15.jpeg">
-<img src="gallery16.jpeg">
-<img src="gallery17.jpeg">
-<img src="gallery18.jpeg">
-<img src="gallery19.jpeg">
-<img src="gallery20.jpeg">
-<img src="gallery21.jpeg">
-<img src="gallery22.jpeg">
-<img src="gallery23.jpeg">
-<img src="gallery24.jpeg">
+  <!----------------------- Music Section ------------------------>
+  <section id="music">
+    <h2>Songs That Remind Me of You</h2>
+    <p>I'll be Adding anytime I find One, For now, these ones start. Have A Good Time Listening to them, Listen to the message😁</p>
+    <div id="playlist"></div>
+  </section>
 
+  <!------------------ Spotify Section --------------------------->
+  <section id="spotify">
+    <h2>My Spotify Playlists For You</h2>
+    <p>Music says things words sometimes can't. I'd love to share my Spotify Playlists with you. Enjoy!(I'll be adding from time to time)</p>
+    <div class="spotify-grid">
+      <!-- Your existing Spotify iframes -->
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3zYoH7v0aNLDwDkAQBKMmT?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2cG9mSD5rZ5NNZsoUe6zoI?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6ZS2GrfLapf8Xu67vc86WF?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1amdpe8BTsa9EHoviHtTqf?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3asm3y8tOVmF0FMqOF2mE3?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2n6cD0WKGRUZdoP19DoM5n?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1uwPf60R7hcjgBCxJQr69i?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0Q9YMCjRe6HWLUAthZ331S?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0fQYgElKvTjYRF5eVPh5y3?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0jIJQfUQVbhXXlSPuNWmmH?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/68ywt93KxWrZhkQJd2s0c0?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/00mhQLVEpz99hH7sIT8Ij5?utm_source=generator" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    </div>
+  </section>
 
-</div>
-</section>
+  <script src="script.js"></script>
 
- <!----------------------- Date Ideas Section ---------------------->
-
-<section id="dates">
-
-<h2>Date Ideas</h2>
-
-<div id="dateIdeas"></div>
-
-</section>
-
-<section id="music">
-
-<h2>Songs That Remind Me of You</h2>
-<p> I'll be Adding anytime I find One, For now, these ones start. Have A Good Time Listening to them, Listen to the message😁</p>
-
-<div id="playlist">
-</div>
-
-
-<!------------------ Spotify Section --------------------------->
-
-<section id="spotify">
-
-<h2>My Spotify Playlists For You</h2>
-
-<p>Music says things words sometimes can't. I'd love to share my Spotify Playlists with you. Enjoy!(I'll be adding from time to time)</p>
-
-<div class="spotify-grid">
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3zYoH7v0aNLDwDkAQBKMmT?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2cG9mSD5rZ5NNZsoUe6zoI?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/6ZS2GrfLapf8Xu67vc86WF?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1amdpe8BTsa9EHoviHtTqf?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/3asm3y8tOVmF0FMqOF2mE3?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2n6cD0WKGRUZdoP19DoM5n?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1uwPf60R7hcjgBCxJQr69i?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0Q9YMCjRe6HWLUAthZ331S?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0fQYgElKvTjYRF5eVPh5y3?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/0jIJQfUQVbhXXlSPuNWmmH?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/68ywt93KxWrZhkQJd2s0c0?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-<iframe data-testid="embed-iframe" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/00mhQLVEpz99hH7sIT8Ij5?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-
-
-</a>
-</div>
-
-</div>
-
-</section>
-</div>
-
-</section>
-
-</section>
-
-<script src="script.js"></script>
-
-
-<!------------------------ Footer / Footnote ---------------------->
-<footer style="background-color: #f2f2f2; padding: 20px; text-align: center; font-size: 14px; color: #555;">
-  <p>From I Koyo To You❤️!.</p>
-  <p>&copy; Koyo|2026| All rights reserved.</p>
-</footer>
-
+  <!------------------------ Footer / Footnote ---------------------->
+  <footer style="background-color: #f2f2f2; padding: 20px; text-align: center; font-size: 14px; color: #555;">
+    <p>From I Koyo To You❤️!.</p>
+    <p>&copy; Koyo|2026| All rights reserved.</p>
+  </footer>
 
 </body>
 </html>
