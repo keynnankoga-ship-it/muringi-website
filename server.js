@@ -144,6 +144,113 @@ app.post("/songs", async (req, res) => {
   }
 });
 
+app.get("/song-of-the-day", async (req,res)=>{
+
+try{
+
+const songs = await Song.find()
+
+const today = new Date().getDate()
+
+const index = today % songs.length
+
+res.json(songs[index])
+
+}catch(err){
+
+res.status(500).json({error:"Failed to get song"})
+
+}
+
+})
+
+
+/*--------------------
+    Admin
+--------------------*/
+app.post("/add-song", async (req,res)=>{
+
+await Song.create(req.body)
+
+res.redirect("/admin")
+
+})
+
+// File storage for gallery uploads (reuse your Cloudinary setup)
+app.post("/upload-gallery", upload.single("photo"), async (req, res) => {
+  // For simplicity, store photos in MongoDB as URLs
+  const newPhoto = {
+    url: req.file.path, // Cloudinary URL
+    uploadedAt: new Date()
+  };
+
+  // Save in MongoDB collection called 'GalleryPhoto'
+  await GalleryPhoto.create(newPhoto);
+
+  res.json({ success: true, photo: newPhoto });
+});
+
+// Get all gallery photos
+app.get("/gallery", async (req, res) => {
+  const photos = await GalleryPhoto.find().sort({ uploadedAt: -1 });
+  res.json(photos);
+});
+
+const GalleryPhoto = require("./models/GalleryPhoto");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+
+// Cloudinary config (already in your server)
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET
+});
+
+// Storage for songs, date ideas, gallery
+const storageGallery = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "private-gallery",
+    allowed_formats: ["jpg","jpeg","png"]
+  }
+});
+const uploadGallery = multer({ storage: storageGallery });
+
+// Upload private gallery photo
+app.post("/upload-gallery", uploadGallery.single("photo"), async (req,res)=>{
+  const photo = new GalleryPhoto({
+    url: req.file.path,
+    uploadedAt: new Date()
+  });
+  await photo.save();
+  res.json(photo);
+});
+
+// Upload song (with file + cover)
+const storageSongs = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "songs",
+    allowed_formats: ["mp3","m4a","jpeg","png"]
+  }
+});
+const uploadSong = multer({ storage: storageSongs });
+
+app.post("/upload-song", uploadSong.fields([
+  { name: "file", maxCount: 1 },
+  { name: "cover", maxCount: 1 }
+]), async (req,res)=>{
+  const song = new Song({
+    title: req.body.title,
+    artist: req.body.artist,
+    reason: req.body.reason,
+    file: req.files['file'][0].path,
+    cover: req.files['cover'][0].path
+  });
+  await song.save();
+  res.json(song);
+});
 
 /* ---------------------------
    Start Server

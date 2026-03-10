@@ -5,6 +5,9 @@
 // ---------------------------
 const BACKEND_URL = "https://hera-9pxh.onrender.com"; // Replace with your Render backend
 
+
+
+
 // ---------------------------
 // Date Ideas Section
 // ---------------------------
@@ -199,3 +202,93 @@ messaging.onMessage(payload => {
     icon: payload.notification.icon || '/assets/icon.png'
   });
 });
+
+
+/* =========================
+   SONG OF THE DAY
+========================= */
+
+const dailySongContainer = document.getElementById("dailySong")
+
+async function loadSongOfDay(){
+
+const res = await fetch("/song-of-the-day")
+
+const song = await res.json()
+
+dailySongContainer.innerHTML = `
+
+<div class="song-card">
+
+<img src="${song.cover}" class="song-cover">
+
+<h3>${song.title}</h3>
+
+<p>${song.artist}</p>
+
+<p>${song.reason}</p>
+
+<audio controls src="${song.file}"></audio>
+
+</div>
+
+`
+
+}
+
+loadSongOfDay()
+
+if(Notification.permission !== "granted"){
+
+Notification.requestPermission()
+
+}
+
+function sendLoveMessage(){
+
+new Notification("❤️ Muringi Message",{
+
+body:"Someone is thinking about you today 💌"
+
+})
+
+}
+
+// Private Gallery
+const galleryForm = document.getElementById("uploadForm");
+const photoInput = document.getElementById("photoInput");
+const photoGallery = document.getElementById("photoGallery");
+
+galleryForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const file = photoInput.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  await fetch(`${BACKEND_URL}/upload-gallery`, {
+    method: "POST",
+    body: formData
+  });
+
+  loadGallery();
+});
+
+async function loadGallery() {
+  const res = await fetch(`${BACKEND_URL}/gallery`);
+  const photos = await res.json();
+
+  photoGallery.innerHTML = "";
+  photos.forEach(p => {
+    const img = document.createElement("img");
+    img.src = p.url;
+    img.style.width = "150px";
+    img.style.margin = "10px";
+    photoGallery.appendChild(img);
+  });
+}
+
+// Load gallery on page load
+loadGallery();
+

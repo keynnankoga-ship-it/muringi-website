@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Muringi</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="admin-login" id="login-section">
+  <h2>Admin Login</h2>
+  <input type="password" id="admin-password" placeholder="Enter password">
+  <button onclick="checkPassword()">Login</button>
+  <p id="login-error" style="color:red;"></p>
+</div>
+
+<div id="admin-panel" style="display:none;">
+  <h2>Welcome Admin</h2>
+
+  <!-- Add Date Idea -->
+  <section>
+    <h3>Add Date Idea</h3>
+    <input type="text" id="date-title" placeholder="Title">
+    <input type="file" id="date-image">
+    <button onclick="addDateIdea()">Add Date Idea</button>
+  </section>
+
+  <!-- Add Song -->
+  <section>
+    <h3>Add Song</h3>
+    <input type="text" id="song-title" placeholder="Title">
+    <input type="text" id="song-artist" placeholder="Artist">
+    <input type="text" id="song-reason" placeholder="Reason">
+    <input type="file" id="song-file">
+    <input type="file" id="song-cover">
+    <button onclick="addSong()">Add Song</button>
+  </section>
+
+  <!-- Upload Private Gallery Photo -->
+  <section>
+    <h3>Upload Private Gallery Photo</h3>
+    <input type="file" id="gallery-photo">
+    <button onclick="uploadGalleryPhoto()">Upload</button>
+  </section>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>
