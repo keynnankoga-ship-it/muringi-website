@@ -1,196 +1,179 @@
-require("dotenv").config();
-
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("cloudinary").v2;
-const path = require("path");
-
-const app = express();
+const BACKEND_URL = "https://hera-9pxh.onrender.com";
 
 /* ---------------------------
-   Middleware
+   Date Ideas
 --------------------------- */
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/music", express.static(path.join(__dirname, "music")));
+const dateContainer = document.getElementById("dateIdeas");
+const dateForm = document.getElementById("dateUploadForm");
 
-/* ---------------------------
-   MongoDB Connection
---------------------------- */
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected ✅"))
-  .catch(err => console.error("MongoDB connection error ❌:", err));
-
-/* ---------------------------
-   Models
---------------------------- */
-const dateIdeaSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  photos: [String]
-});
-
-const songSchema = new mongoose.Schema({
-  title: String,
-  artist: String,
-  reason: String,
-  cover: String,
-  file: String
-});
-
-const galleryPhotoSchema = new mongoose.Schema({
-  url: String,
-  uploadedAt: Date
-});
-
-const DateIdea = mongoose.model("DateIdea", dateIdeaSchema);
-const Song = mongoose.model("Song", songSchema);
-const GalleryPhoto = mongoose.model("GalleryPhoto", galleryPhotoSchema);
-
-/* ---------------------------
-   Cloudinary Config
---------------------------- */
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET
-});
-
-/* ---------------------------
-   Multer Storage
---------------------------- */
-const storageDatePhotos = new CloudinaryStorage({
-  cloudinary,
-  params: { folder: "muringi-date-photos", allowed_formats: ["jpg","jpeg","png"] }
-});
-const uploadDatePhoto = multer({ storage: storageDatePhotos });
-
-const storageGallery = new CloudinaryStorage({
-  cloudinary,
-  params: { folder: "private-gallery", allowed_formats: ["jpg","jpeg","png"] }
-});
-const uploadGallery = multer({ storage: storageGallery });
-
-const storageSongs = new CloudinaryStorage({
-  cloudinary,
-  params: { folder: "songs", allowed_formats: ["mp3","m4a","jpeg","png"] }
-});
-const uploadSong = multer({ storage: storageSongs });
-
-/* ---------------------------
-   Routes: Date Ideas
---------------------------- */
-app.get("/dateIdeas", async (req, res) => {
+async function loadDateIdeas() {
   try {
-    const ideas = await DateIdea.find();
-    res.json(ideas);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+    const res = await fetch(`${BACKEND_URL}/dateIdeas`);
+    const ideas = await res.json();
+    dateContainer.innerHTML = "";
 
-app.post("/upload-date", async (req, res) => {
-  try {
-    const idea = new DateIdea(req.body);
-    await idea.save();
-    res.json(idea);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+    ideas.forEach(idea => {
+      const div = document.createElement("div");
+      div.className = "date-card";
+      div.innerHTML = `
+        <h3>${idea.title}</h3>
+        <p>${idea.description}</p>
+        <input type="file" multiple onchange="uploadPhotos(event,'${idea._id}')">
+        <div class="date-photos" id="photos-${idea._id}"></div>
+      `;
+      dateContainer.appendChild(div);
 
-app.post("/uploadDatePhotos/:id", uploadDatePhoto.array("photos"), async (req, res) => {
-  try {
-    const idea = await DateIdea.findById(req.params.id);
-    if (!idea.photos) idea.photos = [];
-    req.files.forEach(file => idea.photos.push(file.path));
-    await idea.save();
-    res.json(idea);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-/* ---------------------------
-   Routes: Songs
---------------------------- */
-app.get("/songs", async (req, res) => {
-  try {
-    const songs = await Song.find();
-    res.json(songs);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-app.post("/songs", async (req, res) => {
-  try {
-    const song = new Song(req.body);
-    await song.save();
-    res.json(song);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-app.get("/song-of-the-day", async (req, res) => {
-  try {
-    const songs = await Song.find();
-    if (songs.length === 0) return res.json({});
-    const index = Math.floor(Math.random() * songs.length);
-    res.json(songs[index]);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to get song" });
-  }
-});
-
-app.post("/upload-song", uploadSong.fields([
-  { name: "file", maxCount: 1 },
-  { name: "cover", maxCount: 1 }
-]), async (req, res) => {
-  try {
-    const song = new Song({
-      title: req.body.title,
-      artist: req.body.artist,
-      reason: req.body.reason,
-      file: req.files.file[0].path,
-      cover: req.files.cover[0].path
+      const photoDiv = document.getElementById("photos-" + idea._id);
+      if (idea.photos && idea.photos.length > 0) {
+        idea.photos.forEach(photo => {
+          const img = document.createElement("img");
+          img.src = photo.startsWith("http") ? photo : `${BACKEND_URL}${photo}`;
+          img.style.width = "100%";
+          img.style.marginTop = "0.5rem";
+          img.style.borderRadius = "10px";
+          photoDiv.appendChild(img);
+        });
+      }
     });
-    await song.save();
-    res.json(song);
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
   }
+}
+
+async function uploadPhotos(event, id) {
+  const files = event.target.files;
+  if (!files) return;
+  const formData = new FormData();
+  Array.from(files).forEach(f => formData.append("photos", f));
+
+  try {
+    await fetch(`${BACKEND_URL}/uploadDatePhotos/${id}`, { method: "POST", body: formData });
+    loadDateIdeas();
+  } catch (err) { console.error(err); }
+}
+
+dateForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = new FormData(dateForm);
+  try {
+    await fetch(`${BACKEND_URL}/upload-date`, { method: "POST", body: data });
+    dateForm.reset();
+    loadDateIdeas();
+  } catch (err) { console.error(err); }
 });
+
+loadDateIdeas();
 
 /* ---------------------------
-   Routes: Private Gallery
+   Songs
 --------------------------- */
-app.post("/upload-gallery", uploadGallery.single("photo"), async (req, res) => {
-  try {
-    const photo = new GalleryPhoto({ url: req.file.path, uploadedAt: new Date() });
-    await photo.save();
-    res.json(photo);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+async function loadSongs() {
+  const res = await fetch(`${BACKEND_URL}/songs`);
+  const songs = await res.json();
 
-app.get("/gallery", async (req, res) => {
-  try {
-    const photos = await GalleryPhoto.find().sort({ uploadedAt: -1 });
-    res.json(photos);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+  const playlist = document.getElementById("playlist");
+  playlist.innerHTML = "";
+
+  songs.forEach(song => {
+    const div = document.createElement("div");
+    div.className = "song";
+    div.innerHTML = `
+      <img src="${song.cover.startsWith('http') ? song.cover : BACKEND_URL + song.cover}" width="100%" alt="${song.title}">
+      <h3>${song.title}</h3>
+      <p>${song.artist}</p>
+      <p>${song.reason}</p>
+      <audio controls>
+        <source src="${song.file.startsWith('http') ? song.file : BACKEND_URL + song.file}" type="audio/mp3">
+      </audio>
+    `;
+    playlist.appendChild(div);
+  });
+}
+
+loadSongs();
 
 /* ---------------------------
-   Start Server
+   Song of the Day
 --------------------------- */
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const dailySongContainer = document.getElementById("dailySong");
+
+async function loadSongOfDay() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/song-of-the-day`);
+    const song = await res.json();
+    if (!song || !song.title) return;
+
+    dailySongContainer.innerHTML = `
+      <div class="song-card">
+        <img src="${song.cover.startsWith('http') ? song.cover : BACKEND_URL + song.cover}" class="song-cover">
+        <h3>${song.title}</h3>
+        <p>${song.artist}</p>
+        <p>${song.reason}</p>
+        <audio controls src="${song.file.startsWith('http') ? song.file : BACKEND_URL + song.file}"></audio>
+      </div>
+    `;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+loadSongOfDay();
+
+/* ---------------------------
+   Daily Affirmation
+--------------------------- */
+async function showDailyAffirmation() {
+  try {
+    const res = await fetch("data/affirmations.json");
+    const affirmations = await res.json();
+    const index = Math.floor(Math.random() * affirmations.length);
+    document.getElementById("affirmation-text").innerText = affirmations[index];
+  } catch (err) {
+    console.error(err);
+    document.getElementById("affirmation-text").innerText = "Have a wonderful day!";
+  }
+}
+
+showDailyAffirmation();
+
+/* ---------------------------
+   Private Gallery
+--------------------------- */
+const galleryForm = document.getElementById("uploadForm");
+const photoInput = document.getElementById("photoInput");
+const photoGallery = document.getElementById("photoGallery");
+
+galleryForm?.addEventListener("submit", async e => {
+  e.preventDefault();
+  const file = photoInput.files[0];
+  if (!file) return;
+
+  const fd = new FormData();
+  fd.append("photo", file);
+
+  try {
+    await fetch(`${BACKEND_URL}/upload-gallery`, { method: "POST", body: fd });
+    loadGallery();
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+async function loadGallery() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/gallery`);
+    const photos = await res.json();
+    photoGallery.innerHTML = "";
+    photos.forEach(p => {
+      const img = document.createElement("img");
+      img.src = p.url;
+      img.style.width = "150px";
+      img.style.margin = "10px";
+      photoGallery.appendChild(img);
+    });
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+loadGallery();
