@@ -7,18 +7,36 @@ const adminForm = document.getElementById("adminLoginForm");
 const adminContainer = document.getElementById("adminContent");
 const adminPasswordInput = document.getElementById("adminPassword");
 
-adminForm?.addEventListener("submit", (e) => {
+adminForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const pass = adminPasswordInput.value;
-  // Replace "koyoadmin" with your real admin password
-  if (pass === "koyoadmin") {
-    adminForm.style.display = "none";
-    adminContainer.style.display = "block";
-    loadAdminDateIdeas();
-    loadAdminSongs();
-    loadAdminGallery();
-  } else {
-    alert("Incorrect password!");
+
+  try {
+    const res = await fetch("/admin-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ password: pass })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      // Hide login form, show admin content
+      adminForm.style.display = "none";
+      adminContainer.style.display = "block";
+
+      // Load admin data
+      loadAdminDateIdeas();
+      loadAdminSongs();
+      loadAdminGallery();
+    } else {
+      alert("Incorrect password!");
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Something went wrong during login!");
   }
 });
 

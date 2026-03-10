@@ -293,6 +293,8 @@ message:"Wrong password"
 
 });
 
+console.log("Admin password:", adminPassword);
+
 /* ---------------------------
    Admin Delete Routes
 --------------------------- */
