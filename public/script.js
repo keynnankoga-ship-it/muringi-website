@@ -1,294 +1,196 @@
-// /public/script.js
+require("dotenv").config();
 
-// ---------------------------
-// Backend URL
-// ---------------------------
-const BACKEND_URL = "https://hera-9pxh.onrender.com"; // Replace with your Render backend
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const multer = require("multer");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
+const path = require("path");
 
+const app = express();
 
+/* ---------------------------
+   Middleware
+--------------------------- */
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/music", express.static(path.join(__dirname, "music")));
 
+/* ---------------------------
+   MongoDB Connection
+--------------------------- */
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected ✅"))
+  .catch(err => console.error("MongoDB connection error ❌:", err));
 
-// ---------------------------
-// Date Ideas Section
-// ---------------------------
-const dateContainer = document.getElementById("dateIdeas");
-const dateForm = document.getElementById("dateUploadForm");
+/* ---------------------------
+   Models
+--------------------------- */
+const dateIdeaSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  photos: [String]
+});
 
-// Load all date ideas from backend
-async function loadDateIdeas() {
+const songSchema = new mongoose.Schema({
+  title: String,
+  artist: String,
+  reason: String,
+  cover: String,
+  file: String
+});
+
+const galleryPhotoSchema = new mongoose.Schema({
+  url: String,
+  uploadedAt: Date
+});
+
+const DateIdea = mongoose.model("DateIdea", dateIdeaSchema);
+const Song = mongoose.model("Song", songSchema);
+const GalleryPhoto = mongoose.model("GalleryPhoto", galleryPhotoSchema);
+
+/* ---------------------------
+   Cloudinary Config
+--------------------------- */
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET
+});
+
+/* ---------------------------
+   Multer Storage
+--------------------------- */
+const storageDatePhotos = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "muringi-date-photos", allowed_formats: ["jpg","jpeg","png"] }
+});
+const uploadDatePhoto = multer({ storage: storageDatePhotos });
+
+const storageGallery = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "private-gallery", allowed_formats: ["jpg","jpeg","png"] }
+});
+const uploadGallery = multer({ storage: storageGallery });
+
+const storageSongs = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "songs", allowed_formats: ["mp3","m4a","jpeg","png"] }
+});
+const uploadSong = multer({ storage: storageSongs });
+
+/* ---------------------------
+   Routes: Date Ideas
+--------------------------- */
+app.get("/dateIdeas", async (req, res) => {
   try {
-    const res = await fetch(`${BACKEND_URL}/dateIdeas`);
-    const ideas = await res.json();
-
-    dateContainer.innerHTML = "";
-
-    ideas.forEach(idea => {
-      const div = document.createElement("div");
-      div.className = "date-card";
-
-      // Display title, description, and upload input for multiple photos
-      div.innerHTML = `
-        <h3>${idea.title || ""}</h3>
-        <p>${idea.description || ""}</p>
-        <input type="file" multiple onchange="uploadPhotos(event,'${idea._id}')">
-        <div class="date-photos" id="photos-${idea._id}"></div>
-      `;
-      dateContainer.appendChild(div);
-
-      // Display all uploaded photos
-      const photoDiv = document.getElementById("photos-" + idea._id);
-      if (idea.photos && idea.photos.length > 0) {
-        idea.photos.forEach(photo => {
-          const img = document.createElement("img");
-          img.src = photo.startsWith("http") ? photo : `${BACKEND_URL}${photo}`;
-          img.style.width = "100%";
-          img.style.marginTop = "0.5rem";
-          img.style.borderRadius = "10px";
-          photoDiv.appendChild(img);
-        });
-      }
-    });
+    const ideas = await DateIdea.find();
+    res.json(ideas);
   } catch (err) {
-    console.error("Error loading date ideas:", err);
-  }
-}
-
-// Upload multiple photos for a single date idea
-async function uploadPhotos(event, id) {
-  const files = event.target.files;
-  if (!files || files.length === 0) return;
-
-  const formData = new FormData();
-  Array.from(files).forEach(file => formData.append("photos", file));
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/uploadDatePhotos/${id}`, {
-      method: "POST",
-      body: formData
-    });
-
-    if (!res.ok) throw new Error("Upload failed");
-
-    loadDateIdeas(); // Refresh displayed photos
-  } catch (err) {
-    console.error("Error uploading photos:", err);
-  }
-}
-
-// Handle new date idea creation
-dateForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData(dateForm);
-
-  try {
-    const res = await fetch(`${BACKEND_URL}/upload-date`, {
-      method: "POST",
-      body: formData
-    });
-
-    if (!res.ok) throw new Error("Upload failed");
-
-    dateForm.reset();
-    loadDateIdeas();
-  } catch (err) {
-    console.error("Error uploading date idea:", err);
+    res.status(500).json(err);
   }
 });
 
-// Initialize date ideas
-loadDateIdeas();
-
-// ---------------------------
-// Music / Playlist Section
-// ---------------------------
-async function loadSongs() {
+app.post("/upload-date", async (req, res) => {
   try {
-    const res = await fetch(`${BACKEND_URL}/songs`);
-    const songs = await res.json();
-
-    const playlist = document.getElementById("playlist");
-    playlist.innerHTML = "";
-
-    songs.forEach(song => {
-      const div = document.createElement("div");
-      div.className = "song";
-      div.innerHTML = `
-        <img src="${BACKEND_URL}${song.cover || ""}" width="100%" alt="${song.title || ""}">
-        <h3>${song.title || ""}</h3>
-        <p>${song.artist || ""}</p>
-        <p>${song.reason || ""}</p>
-        <audio controls>
-          <source src="${BACKEND_URL}${song.file}" type="audio/mp3">
-        </audio>
-      `;
-      playlist.appendChild(div);
-    });
+    const idea = new DateIdea(req.body);
+    await idea.save();
+    res.json(idea);
   } catch (err) {
-    console.error("Error loading songs:", err);
+    res.status(500).json(err);
   }
-}
-
-// Initialize songs
-loadSongs();
-
-// ---------------------------
-// Daily Affirmation Section
-// ---------------------------
-async function showDailyAffirmation() {
-  try {
-    const response = await fetch('data/affirmations.json');
-    const affirmations = await response.json();
-
-    const today = new Date();
-    const monthNames = [
-      "January","February","March","April","May","June",
-      "July","August","September","October","November","December"
-    ];
-    const month = monthNames[today.getMonth()];
-    const day = today.getDate();
-
-    const affirmation = affirmations[month] && affirmations[month][day] 
-      ? affirmations[month][day] 
-      : "Have a wonderful day!";
-
-    document.getElementById('affirmation-text').innerText = affirmation;
-  } catch (err) {
-    console.error("Error loading affirmation:", err);
-    document.getElementById('affirmation-text').innerText = "Have a wonderful day!";
-  }
-}
-
-// Initialize daily affirmation
-showDailyAffirmation();
-
-// ---------------------------
-// Firebase Push Notifications
-// ---------------------------
-const firebaseConfig = {
-  apiKey: "AIzaSyB1zmsXUaKHiFjnpUg1ddanoqaRSooI4aI",
-  authDomain: "muringi-website.firebaseapp.com",
-  projectId: "muringi-website",
-  messagingSenderId: "672701127341",
-  appId: "1:672701127341:web:29174119759439bbba8424"
-};
-
-firebase.initializeApp(firebaseConfig);
-const messaging = firebase.messaging();
-
-async function requestNotificationPermission() {
-  const permission = await Notification.requestPermission();
-  if (permission === 'granted') {
-    console.log('Notification permission granted.');
-    const token = await messaging.getToken({
-      vapidKey: 'BPzA6p7pueH8JWNpy5RDhPgbG3npPjg8fKNVVFm_QRdm5_trSUZvHaGFcjug4ZB3jRT6P1DK__6v9mvI2enM6H0'
-    });
-    console.log('FCM Token:', token);
-
-    await fetch(`${BACKEND_URL}/save-token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token })
-    });
-  } else {
-    console.log('Notification permission denied.');
-  }
-}
-
-requestNotificationPermission();
-
-messaging.onMessage(payload => {
-  new Notification(payload.notification.title, {
-    body: payload.notification.body,
-    icon: payload.notification.icon || '/assets/icon.png'
-  });
 });
 
-
-/* =========================
-   SONG OF THE DAY
-========================= */
-
-const dailySongContainer = document.getElementById("dailySong")
-
-async function loadSongOfDay(){
-
-const res = await fetch("/song-of-the-day")
-
-const song = await res.json()
-
-dailySongContainer.innerHTML = `
-
-<div class="song-card">
-
-<img src="${song.cover}" class="song-cover">
-
-<h3>${song.title}</h3>
-
-<p>${song.artist}</p>
-
-<p>${song.reason}</p>
-
-<audio controls src="${song.file}"></audio>
-
-</div>
-
-`
-
-}
-
-loadSongOfDay()
-
-if(Notification.permission !== "granted"){
-
-Notification.requestPermission()
-
-}
-
-function sendLoveMessage(){
-
-new Notification("❤️ Muringi Message",{
-
-body:"Someone is thinking about you today 💌"
-
-})
-
-}
-
-// Private Gallery
-const galleryForm = document.getElementById("uploadForm");
-const photoInput = document.getElementById("photoInput");
-const photoGallery = document.getElementById("photoGallery");
-
-galleryForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const file = photoInput.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append("photo", file);
-
-  await fetch(`${BACKEND_URL}/upload-gallery`, {
-    method: "POST",
-    body: formData
-  });
-
-  loadGallery();
+app.post("/uploadDatePhotos/:id", uploadDatePhoto.array("photos"), async (req, res) => {
+  try {
+    const idea = await DateIdea.findById(req.params.id);
+    if (!idea.photos) idea.photos = [];
+    req.files.forEach(file => idea.photos.push(file.path));
+    await idea.save();
+    res.json(idea);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-async function loadGallery() {
-  const res = await fetch(`${BACKEND_URL}/gallery`);
-  const photos = await res.json();
+/* ---------------------------
+   Routes: Songs
+--------------------------- */
+app.get("/songs", async (req, res) => {
+  try {
+    const songs = await Song.find();
+    res.json(songs);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
-  photoGallery.innerHTML = "";
-  photos.forEach(p => {
-    const img = document.createElement("img");
-    img.src = p.url;
-    img.style.width = "150px";
-    img.style.margin = "10px";
-    photoGallery.appendChild(img);
-  });
-}
+app.post("/songs", async (req, res) => {
+  try {
+    const song = new Song(req.body);
+    await song.save();
+    res.json(song);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
-// Load gallery on page load
-loadGallery();
+app.get("/song-of-the-day", async (req, res) => {
+  try {
+    const songs = await Song.find();
+    if (songs.length === 0) return res.json({});
+    const index = Math.floor(Math.random() * songs.length);
+    res.json(songs[index]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get song" });
+  }
+});
 
+app.post("/upload-song", uploadSong.fields([
+  { name: "file", maxCount: 1 },
+  { name: "cover", maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const song = new Song({
+      title: req.body.title,
+      artist: req.body.artist,
+      reason: req.body.reason,
+      file: req.files.file[0].path,
+      cover: req.files.cover[0].path
+    });
+    await song.save();
+    res.json(song);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+/* ---------------------------
+   Routes: Private Gallery
+--------------------------- */
+app.post("/upload-gallery", uploadGallery.single("photo"), async (req, res) => {
+  try {
+    const photo = new GalleryPhoto({ url: req.file.path, uploadedAt: new Date() });
+    await photo.save();
+    res.json(photo);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+app.get("/gallery", async (req, res) => {
+  try {
+    const photos = await GalleryPhoto.find().sort({ uploadedAt: -1 });
+    res.json(photos);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+/* ---------------------------
+   Start Server
+--------------------------- */
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

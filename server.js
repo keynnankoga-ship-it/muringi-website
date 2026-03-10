@@ -6,31 +6,28 @@ const cors = require("cors");
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
+const path = require("path");
 
 const app = express();
 
 /* ---------------------------
    Middleware
 --------------------------- */
-
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
-app.use("/music", express.static("music"));
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/music", express.static(path.join(__dirname, "music")));
 
 /* ---------------------------
    MongoDB Connection
 --------------------------- */
-
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB connected ✅"))
-.catch(err => console.error("MongoDB connection error ❌:", err));
-
+  .then(() => console.log("MongoDB connected ✅"))
+  .catch(err => console.error("MongoDB connection error ❌:", err));
 
 /* ---------------------------
    Models
 --------------------------- */
-
 const dateIdeaSchema = new mongoose.Schema({
   title: String,
   description: String,
@@ -45,41 +42,48 @@ const songSchema = new mongoose.Schema({
   file: String
 });
 
+const galleryPhotoSchema = new mongoose.Schema({
+  url: String,
+  uploadedAt: Date
+});
+
 const DateIdea = mongoose.model("DateIdea", dateIdeaSchema);
 const Song = mongoose.model("Song", songSchema);
-
+const GalleryPhoto = mongoose.model("GalleryPhoto", galleryPhotoSchema);
 
 /* ---------------------------
-   Cloudinary Configuration
+   Cloudinary Config
 --------------------------- */
-
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
   api_secret: process.env.CLOUD_API_SECRET
 });
 
-
 /* ---------------------------
-   Multer Cloudinary Storage
+   Multer Storage
 --------------------------- */
-
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "muringi-date-photos",
-    allowed_formats: ["jpg", "jpeg", "png"]
-  }
+const storageDatePhotos = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "muringi-date-photos", allowed_formats: ["jpg","jpeg","png"] }
 });
+const uploadDatePhoto = multer({ storage: storageDatePhotos });
 
-const upload = multer({ storage });
+const storageGallery = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "private-gallery", allowed_formats: ["jpg","jpeg","png"] }
+});
+const uploadGallery = multer({ storage: storageGallery });
 
+const storageSongs = new CloudinaryStorage({
+  cloudinary,
+  params: { folder: "songs", allowed_formats: ["mp3","m4a","jpeg","png"] }
+});
+const uploadSong = multer({ storage: storageSongs });
 
 /* ---------------------------
-   Date Ideas Routes
+   Routes: Date Ideas
 --------------------------- */
-
-// Get all date ideas
 app.get("/dateIdeas", async (req, res) => {
   try {
     const ideas = await DateIdea.find();
@@ -89,8 +93,7 @@ app.get("/dateIdeas", async (req, res) => {
   }
 });
 
-// Add new date idea
-app.post("/dateIdeas", async (req, res) => {
+app.post("/upload-date", async (req, res) => {
   try {
     const idea = new DateIdea(req.body);
     await idea.save();
@@ -100,30 +103,21 @@ app.post("/dateIdeas", async (req, res) => {
   }
 });
 
-// Upload photo for date idea
-app.post("/uploadDatePhoto/:id", upload.single("photo"), async (req, res) => {
+app.post("/uploadDatePhotos/:id", uploadDatePhoto.array("photos"), async (req, res) => {
   try {
     const idea = await DateIdea.findById(req.params.id);
-
-    if (!idea.photos) {
-      idea.photos = [];
-    }
-
-    idea.photos.push(req.file.path);
+    if (!idea.photos) idea.photos = [];
+    req.files.forEach(file => idea.photos.push(file.path));
     await idea.save();
-
     res.json(idea);
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-
 /* ---------------------------
-   Songs Routes
+   Routes: Songs
 --------------------------- */
-
-// Get all songs
 app.get("/songs", async (req, res) => {
   try {
     const songs = await Song.find();
@@ -133,7 +127,6 @@ app.get("/songs", async (req, res) => {
   }
 });
 
-// Add song
 app.post("/songs", async (req, res) => {
   try {
     const song = new Song(req.body);
@@ -144,120 +137,60 @@ app.post("/songs", async (req, res) => {
   }
 });
 
-app.get("/song-of-the-day", async (req,res)=>{
-
-try{
-
-const songs = await Song.find()
-
-const today = new Date().getDate()
-
-const index = today % songs.length
-
-res.json(songs[index])
-
-}catch(err){
-
-res.status(500).json({error:"Failed to get song"})
-
-}
-
-})
-
-
-/*--------------------
-    Admin
---------------------*/
-app.post("/add-song", async (req,res)=>{
-
-await Song.create(req.body)
-
-res.redirect("/admin")
-
-})
-
-// File storage for gallery uploads (reuse your Cloudinary setup)
-app.post("/upload-gallery", upload.single("photo"), async (req, res) => {
-  // For simplicity, store photos in MongoDB as URLs
-  const newPhoto = {
-    url: req.file.path, // Cloudinary URL
-    uploadedAt: new Date()
-  };
-
-  // Save in MongoDB collection called 'GalleryPhoto'
-  await GalleryPhoto.create(newPhoto);
-
-  res.json({ success: true, photo: newPhoto });
-});
-
-// Get all gallery photos
-app.get("/gallery", async (req, res) => {
-  const photos = await GalleryPhoto.find().sort({ uploadedAt: -1 });
-  res.json(photos);
-});
-
-const GalleryPhoto = require("./models/GalleryPhoto");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("cloudinary").v2;
-
-// Cloudinary config (already in your server)
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.CLOUD_API_KEY,
-  api_secret: process.env.CLOUD_API_SECRET
-});
-
-// Storage for songs, date ideas, gallery
-const storageGallery = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "private-gallery",
-    allowed_formats: ["jpg","jpeg","png"]
+app.get("/song-of-the-day", async (req, res) => {
+  try {
+    const songs = await Song.find();
+    if (songs.length === 0) return res.json({});
+    const index = Math.floor(Math.random() * songs.length);
+    res.json(songs[index]);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to get song" });
   }
 });
-const uploadGallery = multer({ storage: storageGallery });
-
-// Upload private gallery photo
-app.post("/upload-gallery", uploadGallery.single("photo"), async (req,res)=>{
-  const photo = new GalleryPhoto({
-    url: req.file.path,
-    uploadedAt: new Date()
-  });
-  await photo.save();
-  res.json(photo);
-});
-
-// Upload song (with file + cover)
-const storageSongs = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "songs",
-    allowed_formats: ["mp3","m4a","jpeg","png"]
-  }
-});
-const uploadSong = multer({ storage: storageSongs });
 
 app.post("/upload-song", uploadSong.fields([
   { name: "file", maxCount: 1 },
   { name: "cover", maxCount: 1 }
-]), async (req,res)=>{
-  const song = new Song({
-    title: req.body.title,
-    artist: req.body.artist,
-    reason: req.body.reason,
-    file: req.files['file'][0].path,
-    cover: req.files['cover'][0].path
-  });
-  await song.save();
-  res.json(song);
+]), async (req, res) => {
+  try {
+    const song = new Song({
+      title: req.body.title,
+      artist: req.body.artist,
+      reason: req.body.reason,
+      file: req.files.file[0].path,
+      cover: req.files.cover[0].path
+    });
+    await song.save();
+    res.json(song);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+/* ---------------------------
+   Routes: Private Gallery
+--------------------------- */
+app.post("/upload-gallery", uploadGallery.single("photo"), async (req, res) => {
+  try {
+    const photo = new GalleryPhoto({ url: req.file.path, uploadedAt: new Date() });
+    await photo.save();
+    res.json(photo);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+app.get("/gallery", async (req, res) => {
+  try {
+    const photos = await GalleryPhoto.find().sort({ uploadedAt: -1 });
+    res.json(photos);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 /* ---------------------------
    Start Server
 --------------------------- */
-
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
