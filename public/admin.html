@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - Muringi</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | A Love Diary</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #E5E5E5; font-family: 'Poppins', sans-serif; color: #000; }
+    #adminContent { display: none; margin: 2rem; }
+    .admin-section { margin-bottom: 3rem; }
+    .admin-section h2 { margin-bottom: 1rem; }
+    .date-card, .song { background: #F5F0E1; padding: 1rem; border-radius: 15px; margin-bottom: 1rem; box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+    .date-photos img, .song img { margin-top: 0.5rem; border-radius: 10px; }
+    button { cursor: pointer; }
+    #adminLoginForm { max-width: 400px; margin: 5rem auto; padding: 2rem; background: #F5F0E1; border-radius: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); text-align: center; }
+    #adminLoginForm input { padding: 0.5rem; margin: 0.5rem 0; width: 80%; border-radius: 5px; border: 1px solid #ccc; }
+    #adminLoginForm button { padding: 0.5rem 1rem; border: none; background: #A89F91; color: #fff; border-radius: 5px; font-weight: bold; }
+    .date-photos, #adminGallery { display: flex; flex-wrap: wrap; gap: 10px; }
+    .date-photos div, #adminGallery div { position: relative; display: inline-block; }
+    .date-photos div button, #adminGallery div button { position: absolute; top: 0; right: 0; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; line-height: 20px; text-align: center; padding: 0; }
+  </style>
 </head>
 <body>
-<div class="admin-login" id="login-section">
-  <h2>Admin Login</h2>
-  <input type="password" id="admin-password" placeholder="Enter password">
-  <button onclick="checkPassword()">Login</button>
-  <p id="login-error" style="color:red;"></p>
-</div>
 
-<div id="admin-panel" style="display:none;">
-  <h2>Welcome Admin</h2>
+  <!-- Admin Login Form -->
+  <form id="adminLoginForm">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter Password" required>
+    <button type="submit">Login</button>
+  </form>
 
-  <!-- Add Date Idea -->
-  <section>
-    <h3>Add Date Idea</h3>
-    <input type="text" id="date-title" placeholder="Title">
-    <input type="file" id="date-image">
-    <button onclick="addDateIdea()">Add Date Idea</button>
-  </section>
+  <!-- Admin Content -->
+  <div id="adminContent">
 
-  <!-- Add Song -->
-  <section>
-    <h3>Add Song</h3>
-    <input type="text" id="song-title" placeholder="Title">
-    <input type="text" id="song-artist" placeholder="Artist">
-    <input type="text" id="song-reason" placeholder="Reason">
-    <input type="file" id="song-file">
-    <input type="file" id="song-cover">
-    <button onclick="addSong()">Add Song</button>
-  </section>
+    <!-- Date Ideas Management -->
+    <div class="admin-section" id="dateIdeasSection">
+      <h2>Manage Date Ideas</h2>
+      <div id="adminDateIdeas"></div>
+    </div>
 
-  <!-- Upload Private Gallery Photo -->
-  <section>
-    <h3>Upload Private Gallery Photo</h3>
-    <input type="file" id="gallery-photo">
-    <button onclick="uploadGalleryPhoto()">Upload</button>
-  </section>
-</div>
+    <!-- Songs Management -->
+    <div class="admin-section" id="songsSection">
+      <h2>Manage Songs</h2>
+      <div id="adminSongs"></div>
+    </div>
 
-<script src="admin.js"></script>
+    <!-- Gallery Management -->
+    <div class="admin-section" id="gallerySection">
+      <h2>Manage Gallery Photos</h2>
+      <div id="adminGallery"></div>
+    </div>
+
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>
