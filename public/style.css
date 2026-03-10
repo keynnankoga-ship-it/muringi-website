@@ -127,7 +127,7 @@ section h2::after {
 }
 
 /* =========================
-   Gallery
+   Gallery - User Interface
 ========================= */
 .gallery {
   display: grid;
@@ -147,7 +147,7 @@ section h2::after {
 }
 
 /* =========================
-   Date Ideas Section
+   Date Ideas Section - User Interface
 ========================= */
 #dateIdeas {
   display: flex;
@@ -181,9 +181,7 @@ section h2::after {
   color: #000000;
 }
 
-/* ----------------------------
-   Photos inside Date Cards
----------------------------- */
+/* Photos inside Date Cards */
 .date-photos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
@@ -205,7 +203,7 @@ section h2::after {
 }
 
 /* =========================
-   Music Section
+   Music Section - User Interface
 ========================= */
 #playlist {
   display: grid;
@@ -279,27 +277,129 @@ footer {
 }
 
 /* =========================
+   Admin Dashboard
+========================= */
+#adminContent {
+  margin: 2rem;
+}
+
+.admin-section {
+  margin-bottom: 3rem;
+}
+
+.admin-section h2 {
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  color: #000;
+}
+
+/* Horizontal container for admin items */
+.admin-horizontal-container {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px 0;
+}
+
+/* Item cards in admin */
+.item {
+  flex: 0 0 auto;
+  background: #F5F0E1;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  text-align: center;
+  min-width: 150px;
+  transition: transform 0.2s;
+}
+
+.item:hover {
+  transform: translateY(-3px);
+}
+
+/* Song cards - admin */
+.song .song-item {
+  width: 50px;
+  height: 50px;
+}
+
+/* Gallery thumbnails - admin */
+.gallery-item {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.2s;
+}
+
+.gallery-item:hover {
+  transform: scale(1.05);
+}
+
+/* Delete buttons - admin */
+.delete-btn {
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+/* Forms styling - admin */
+form input, form textarea {
+  width: 90%;
+  padding: 5px;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+form button {
+  background: #A89F91;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+/* Scrollbar styling for horizontal containers */
+.admin-horizontal-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.admin-horizontal-container::-webkit-scrollbar-thumb {
+  background-color: #A89F91;
+  border-radius: 4px;
+}
+
+.admin-horizontal-container::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+/* =========================
    Responsive
 ========================= */
 @media(max-width: 768px) {
 
-  /* Keep hero horizontal */
+  /* Hero section responsive */
   .hero {
     flex-direction: row;
     overflow-x: auto;
   }
 
-  /* Keep gallery rows instead of stacking */
   .gallery {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Keep music cards horizontal */
   #playlist {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Keep spotify rows */
   .spotify-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -307,5 +407,4 @@ footer {
   nav {
     flex-wrap: wrap;
   }
-
 }
