@@ -1,24 +1,38 @@
-/* =========================
-ADMIN PASSWORD
-========================= */
+const BACKEND_URL = "https://hera-9pxh.onrender.com";
 
-const PASSWORD = "koyo123"
+const adminForm = document.getElementById("adminLoginForm");
+const adminContainer = document.getElementById("adminContent");
+const adminPasswordInput = document.getElementById("adminPassword");
 
-/* =========================
-LOGIN
-========================= */
+adminForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const pass = adminPasswordInput.value;
 
-const loginForm = document.getElementById("adminLoginForm")
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin-login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: pass })
+    });
 
-loginForm.addEventListener("submit", e => {
+    const data = await res.json();
 
-e.preventDefault()
+    if (data.success) {
+      adminForm.style.display = "none";
+      adminContainer.style.display = "block";
+      // Load admin sections
+      loadAdminDateIdeas();
+      loadAdminSongs();
+      loadAdminGallery();
+    } else {
+      alert("Incorrect password!");
+    }
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Something went wrong during login!");
+  }
+});
 
-const password = document.getElementById("adminPassword").value
-
-if(password === PASSWORD){
-
-document.getElementById("adminLogin").style.display="none"
 
 document.getElementById("adminContent").style.display="block"
 

@@ -173,6 +173,17 @@ app.delete("/admin/gallery/:id", async (req, res) => {
   res.json({ success: true });
 });
 
+// Admin login
+app.post("/admin-login", (req, res) => {
+  const { password } = req.body;
+
+  if (password === process.env.ADMIN_PASS) {
+    return res.json({ success: true });
+  } else {
+    return res.json({ success: false });
+  }
+});
+
 /* =========================
    Start Server
 ========================= */
