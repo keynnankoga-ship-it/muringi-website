@@ -48,7 +48,7 @@ async function loadSongs() {
 
       const cover = song.cover.startsWith("/") ? song.cover : "/" + song.cover;
 
-      // support BOTH "file" and "audio"
+      // support both MongoDB formats
       const audioPath = song.file || song.audio || "";
       const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
 
@@ -67,6 +67,8 @@ async function loadSongs() {
       container.appendChild(div);
 
     });
+
+    enableAudioControl();
 
 
     /* ---------- Song of the Day ---------- */
@@ -98,6 +100,30 @@ async function loadSongs() {
   } catch (err) {
     console.error(err);
   }
+}
+
+
+/* =========================
+   AUTO PAUSE OTHER SONGS
+========================= */
+function enableAudioControl(){
+
+const audios=document.querySelectorAll("audio")
+
+audios.forEach(audio=>{
+
+audio.addEventListener("play",()=>{
+
+audios.forEach(other=>{
+if(other!==audio){
+other.pause()
+}
+})
+
+})
+
+})
+
 }
 
 
@@ -153,12 +179,12 @@ async function loadGallery() {
   const container = document.getElementById("photoGallery");
   if (!container) return;
 
+  container.innerHTML = "";
+
   try {
 
     const res = await fetch("/gallery");
     const photos = await res.json();
-
-    container.innerHTML = "";
 
     photos.forEach(photo => {
 
@@ -169,12 +195,31 @@ async function loadGallery() {
 
     });
 
-    enableGalleryLightbox();
-    enableSwipeGallery();
-
   } catch (err) {
     console.error(err);
   }
+
+
+  /* Photos from public/gallery */
+
+  const publicPhotos = [
+    "/gallery/photo1.jpg",
+    "/gallery/photo2.jpg",
+    "/gallery/photo3.jpg"
+  ];
+
+  publicPhotos.forEach(src => {
+
+    const img = document.createElement("img");
+    img.src = src;
+
+    container.appendChild(img);
+
+  });
+
+  enableGalleryLightbox();
+  enableSwipeGallery();
+
 }
 
 
