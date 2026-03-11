@@ -13,7 +13,6 @@ async function loadAffirmation() {
       return;
     }
 
-    // 366-day system
     const today = new Date();
     const start = new Date(today.getFullYear(), 0, 0);
     const diff = today - start;
@@ -47,9 +46,11 @@ async function loadSongs() {
 
     songs.forEach(song => {
 
-      // Fix path if missing leading /
       const cover = song.cover.startsWith("/") ? song.cover : "/" + song.cover;
-      const audio = song.audio.startsWith("/") ? song.audio : "/" + song.audio;
+
+      // support BOTH "file" and "audio"
+      const audioPath = song.file || song.audio || "";
+      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
 
       const div = document.createElement("div");
       div.className = "song";
@@ -78,7 +79,9 @@ async function loadSongs() {
     if (daySong && dailyContainer) {
 
       const cover = daySong.cover.startsWith("/") ? daySong.cover : "/" + daySong.cover;
-      const audio = daySong.audio.startsWith("/") ? daySong.audio : "/" + daySong.audio;
+
+      const audioPath = daySong.file || daySong.audio || "";
+      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
 
       dailyContainer.innerHTML = `
         <div class="song">
@@ -93,9 +96,7 @@ async function loadSongs() {
     }
 
   } catch (err) {
-
     console.error(err);
-
   }
 }
 
@@ -139,9 +140,7 @@ async function loadDateIdeas() {
     });
 
   } catch (err) {
-
     console.error(err);
-
   }
 }
 
@@ -174,9 +173,7 @@ async function loadGallery() {
     enableSwipeGallery();
 
   } catch (err) {
-
     console.error(err);
-
   }
 }
 
