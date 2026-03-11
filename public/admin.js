@@ -22,8 +22,6 @@ adminForm?.addEventListener("submit", async (e) => {
     if (data.success) {
       adminForm.style.display = "none";
       adminContainer.style.display = "block";
-
-      // Load all admin content
       loadAdminDateIdeas();
       loadAdminSongs();
       loadAdminGallery();
@@ -37,43 +35,10 @@ adminForm?.addEventListener("submit", async (e) => {
 });
 
 /* ---------------------------
-   Helper Function: Delete Item
---------------------------- */
-async function deleteItem(url, reloadFunc) {
-  try {
-    await fetch(url, { method: "DELETE" });
-    reloadFunc();
-  } catch (err) {
-    console.error("Delete error:", err);
-    alert("Failed to delete item!");
-  }
-}
-
-/* ---------------------------
    Admin Date Ideas
 --------------------------- */
 const adminDateContainer = document.getElementById("adminDateIdeas");
-const addDateIdeaForm = document.getElementById("addDateIdeaForm");
-
-addDateIdeaForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const data = {
-    title: form.title.value,
-    description: form.description.value
-  };
-  try {
-    await fetch(`${BACKEND_URL}/dateIdeas`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    form.reset();
-    loadAdminDateIdeas();
-  } catch (err) {
-    console.error("Add date idea error:", err);
-  }
-});
+const addDateForm = document.getElementById("addDateForm");
 
 async function loadAdminDateIdeas() {
   const res = await fetch(`${BACKEND_URL}/dateIdeas`);
@@ -82,39 +47,66 @@ async function loadAdminDateIdeas() {
 
   ideas.forEach(idea => {
     const div = document.createElement("div");
-    div.className = "item date-card";
+    div.className = "date-card";
     div.innerHTML = `
       <h3>${idea.title}</h3>
       <p>${idea.description}</p>
+      <div class="date-photos" id="admin-photos-${idea._id}"></div>
     `;
+    adminDateContainer.appendChild(div);
 
+    // Delete Date Idea
     const delBtn = document.createElement("button");
+    delBtn.innerText = "Delete Date Idea";
     delBtn.className = "delete-btn";
-    delBtn.innerText = "Delete";
-    delBtn.addEventListener("click", () => deleteItem(`${BACKEND_URL}/delete-date/${idea._id}`, loadAdminDateIdeas));
+    delBtn.addEventListener("click", async () => {
+      await fetch(`${BACKEND_URL}/admin/date/${idea._id}`, { method: "DELETE" });
+      loadAdminDateIdeas();
+    });
     div.appendChild(delBtn);
 
-    adminDateContainer.appendChild(div);
+    // Photos
+    const photoDiv = document.getElementById(`admin-photos-${idea._id}`);
+    if (idea.photos && idea.photos.length > 0) {
+      idea.photos.forEach(p => {
+        const img = document.createElement("img");
+        img.src = p.startsWith("http") ? p : BACKEND_URL + p;
+        img.style.width = "70px";
+        img.style.margin = "2px";
+        img.style.borderRadius = "5px";
+        photoDiv.appendChild(img);
+      });
+    }
   });
 }
+
+// Add Date Idea
+addDateForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(addDateForm);
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/date`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      addDateForm.reset();
+      loadAdminDateIdeas();
+    } else {
+      alert("Failed to add date idea");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error adding date idea");
+  }
+});
 
 /* ---------------------------
    Admin Songs
 --------------------------- */
 const adminSongContainer = document.getElementById("adminSongs");
 const addSongForm = document.getElementById("addSongForm");
-
-addSongForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  try {
-    await fetch(`${BACKEND_URL}/songs`, { method: "POST", body: formData });
-    e.target.reset();
-    loadAdminSongs();
-  } catch (err) {
-    console.error("Add song error:", err);
-  }
-});
 
 async function loadAdminSongs() {
   const res = await fetch(`${BACKEND_URL}/songs`);
@@ -123,63 +115,107 @@ async function loadAdminSongs() {
 
   songs.forEach(song => {
     const div = document.createElement("div");
-    div.className = "item song";
-
+    div.className = "song";
     div.innerHTML = `
-      <p>${song.title} - ${song.artist}</p>
-      <audio controls class="song-item">
-        <source src="${song.url.startsWith("http") ? song.url : BACKEND_URL + song.url}" type="audio/mpeg">
+      <img src="${song.cover.startsWith("http") ? song.cover : BACKEND_URL + song.cover}" width="100%">
+      <h3>${song.title}</h3>
+      <p>${song.artist}</p>
+      <p>${song.reason}</p>
+      <audio controls>
+        <source src="${song.file.startsWith("http") ? song.file : BACKEND_URL + song.file}" type="audio/mpeg">
       </audio>
     `;
-
     const delBtn = document.createElement("button");
+    delBtn.innerText = "Delete Song";
     delBtn.className = "delete-btn";
-    delBtn.innerText = "Delete";
-    delBtn.addEventListener("click", () => deleteItem(`${BACKEND_URL}/delete-song/${song._id}`, loadAdminSongs));
-
+    delBtn.addEventListener("click", async () => {
+      await fetch(`${BACKEND_URL}/admin/song/${song._id}`, { method: "DELETE" });
+      loadAdminSongs();
+    });
     div.appendChild(delBtn);
     adminSongContainer.appendChild(div);
   });
 }
 
+// Add Song
+addSongForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(addSongForm);
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/song`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      addSongForm.reset();
+      loadAdminSongs();
+    } else {
+      alert("Failed to add song");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error adding song");
+  }
+});
+
 /* ---------------------------
-   Admin Gallery
+   Admin Private Gallery
 --------------------------- */
 const adminGalleryContainer = document.getElementById("adminGallery");
 const addGalleryForm = document.getElementById("addGalleryForm");
-
-addGalleryForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  try {
-    await fetch(`${BACKEND_URL}/gallery`, { method: "POST", body: formData });
-    e.target.reset();
-    loadAdminGallery();
-  } catch (err) {
-    console.error("Add gallery error:", err);
-  }
-});
 
 async function loadAdminGallery() {
   const res = await fetch(`${BACKEND_URL}/gallery`);
   const photos = await res.json();
   adminGalleryContainer.innerHTML = "";
 
-  photos.forEach(photo => {
+  photos.forEach(p => {
     const div = document.createElement("div");
-    div.className = "item";
+    div.style.display = "inline-block";
+    div.style.position = "relative";
+    div.style.margin = "5px";
 
     const img = document.createElement("img");
-    img.src = photo.url.startsWith("http") ? photo.url : BACKEND_URL + photo.url;
-    img.className = "gallery-item";
+    img.src = p.url.startsWith("http") ? p.url : BACKEND_URL + p.url;
+    img.style.width = "100px";
+    img.style.borderRadius = "5px";
 
     const delBtn = document.createElement("button");
+    delBtn.innerText = "X";
     delBtn.className = "delete-btn";
-    delBtn.innerText = "Delete";
-    delBtn.addEventListener("click", () => deleteItem(`${BACKEND_URL}/delete-gallery/${photo._id}`, loadAdminGallery));
+    delBtn.style.position = "absolute";
+    delBtn.style.top = "0";
+    delBtn.style.right = "0";
+    delBtn.addEventListener("click", async () => {
+      await fetch(`${BACKEND_URL}/admin/gallery/${p._id}`, { method: "DELETE" });
+      loadAdminGallery();
+    });
 
     div.appendChild(img);
     div.appendChild(delBtn);
     adminGalleryContainer.appendChild(div);
   });
 }
+
+// Add Private Gallery Photo
+addGalleryForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(addGalleryForm);
+  try {
+    const res = await fetch(`${BACKEND_URL}/admin/gallery`, {
+      method: "POST",
+      body: formData
+    });
+    const data = await res.json();
+    if (data.success) {
+      addGalleryForm.reset();
+      loadAdminGallery();
+    } else {
+      alert("Failed to add photo");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error adding photo");
+  }
+});

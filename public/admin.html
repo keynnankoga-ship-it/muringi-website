@@ -1,99 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | A Love Diary</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body { background: #E5E5E5; font-family: 'Poppins', sans-serif; color: #000; }
-    #adminContent { display: none; margin: 2rem; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Muringi</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =========================
+   Reset and Base Styles
+========================= */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+body { background:#E5E5E5; color:#000; line-height:1.5; }
 
-    .admin-section { margin-bottom: 3rem; }
-    .admin-section h2 { margin-bottom: 1rem; }
+/* =========================
+   Admin Layout
+========================= */
+#adminLoginForm { max-width:400px; margin:5rem auto; padding:2rem; background:#F5F0E1; border-radius:15px; box-shadow:0 6px 12px rgba(0,0,0,0.1); text-align:center; }
+#adminLoginForm input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+#adminLoginForm button { padding:10px 20px; border:none; border-radius:5px; background:#A89F91; color:#fff; cursor:pointer; transition:0.3s; }
+#adminLoginForm button:hover { background:#8a8378; }
 
-    .admin-horizontal-container {
-      display: flex;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      gap: 15px;
-      padding: 10px 0;
-    }
+/* =========================
+   Admin Container
+========================= */
+#adminContent { display:none; padding:2rem; max-width:1200px; margin:0 auto; }
 
-    .item { flex: 0 0 auto; text-align: center; }
+/* ----------------------------
+   Sections
+---------------------------- */
+.admin-section { margin-bottom:4rem; }
+.admin-section h2 { font-size:1.8rem; margin-bottom:1rem; text-align:center; }
+.admin-section form { background:#F5F0E1; padding:1rem; border-radius:15px; margin-bottom:2rem; box-shadow:0 6px 12px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:0.8rem; }
+.admin-section form input, .admin-section form textarea { padding:8px; border-radius:5px; border:1px solid #ccc; }
+.admin-section form button { width:fit-content; padding:8px 15px; border:none; border-radius:5px; background:#A89F91; color:#fff; cursor:pointer; transition:0.3s; }
+.admin-section form button:hover { background:#8a8378; }
 
-    .song-item { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+/* ----------------------------
+   Cards
+---------------------------- */
+.admin-cards { display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
+.date-card, .song { background:#F5F0E1; padding:1rem; border-radius:15px; box-shadow:0 6px 12px rgba(0,0,0,0.1); width:250px; transition:0.3s; }
+.date-card:hover, .song:hover { transform:translateY(-5px); }
+.date-card img, .song img { width:100%; border-radius:10px; margin-top:0.5rem; }
+.song audio { width:100%; margin-top:0.5rem; }
+.delete-btn { background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; margin-top:5px; transition:0.3s; }
+.delete-btn:hover { opacity:0.8; }
 
-    .gallery-item { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; }
+/* ----------------------------
+   Date Photos Grid
+---------------------------- */
+.date-photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:5px; margin-top:0.5rem; }
+.date-photos img { width:100%; height:70px; object-fit:cover; border-radius:8px; cursor:pointer; transition:transform 0.2s; }
+.date-photos img:hover { transform:scale(1.1); }
 
-    #adminLoginForm { max-width: 400px; margin: 5rem auto; padding: 2rem; background: #F5F0E1; border-radius: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); text-align: center; }
-    #adminLoginForm input { padding: 0.5rem; margin: 0.5rem 0; width: 80%; border-radius: 5px; border: 1px solid #ccc; }
-    #adminLoginForm button { padding: 0.5rem 1rem; border: none; background: #A89F91; color: #fff; border-radius: 5px; font-weight: bold; }
+/* ----------------------------
+   Gallery Grid
+---------------------------- */
+#adminGallery { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+#adminGallery div { position:relative; display:inline-block; }
+#adminGallery img { width:100px; border-radius:5px; }
 
-    button { cursor: pointer; }
-
-    input, textarea { width: 90%; padding: 5px; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
-
-    form button { background: #A89F91; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-
-    .item button.delete-btn {
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 5px 10px;
-      cursor: pointer;
-      margin-top: 5px;
-    }
-  </style>
+/* =========================
+   Responsive
+========================= */
+@media(max-width:768px){
+  .admin-cards { flex-direction:column; align-items:center; }
+  .date-card, .song { width:90%; }
+  form { width:90%; margin:0 auto; }
+}
+</style>
 </head>
 <body>
 
-  <!-- Admin Login Form -->
-  <form id="adminLoginForm">
-    <h2>Admin Login</h2>
-    <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
-    <button type="submit">Login</button>
-  </form>
+<!-- =========================
+     Admin Login Form
+========================= -->
+<form id="adminLoginForm">
+  <h2>Admin Login</h2>
+  <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+  <button type="submit">Login</button>
+</form>
 
-  <!-- Admin Content -->
-  <div id="adminContent">
+<!-- =========================
+     Admin Content
+========================= -->
+<div id="adminContent">
 
-    <!-- Date Ideas Management -->
-    <div class="admin-section" id="dateIdeasSection">
-      <h2>Manage Date Ideas</h2>
-      <form id="addDateIdeaForm">
-        <input type="text" name="title" placeholder="Title" required>
-        <textarea name="description" placeholder="Description"></textarea>
-        <button type="submit">Add Date Idea</button>
-      </form>
-      <div id="adminDateIdeas" class="admin-horizontal-container"></div>
-    </div>
+  <!-- -------------------------
+       Date Ideas Section
+  ------------------------- -->
+  <section class="admin-section" id="dateSection">
+    <h2>Date Ideas</h2>
 
-    <!-- Songs Management -->
-    <div class="admin-section" id="songsSection">
-      <h2>Manage Songs</h2>
-      <form id="addSongForm" enctype="multipart/form-data">
-        <input type="text" name="title" placeholder="Song Title" required>
-        <input type="text" name="artist" placeholder="Artist" required>
-        <input type="file" name="song" accept="audio/*" required>
-        <button type="submit">Add Song</button>
-      </form>
-      <div id="adminSongs" class="admin-horizontal-container"></div>
-    </div>
+    <form id="addDateForm" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Title" required>
+      <textarea name="description" placeholder="Description"></textarea>
+      <input type="file" name="photos" multiple>
+      <button type="submit">Add Date Idea</button>
+    </form>
 
-    <!-- Gallery Management -->
-    <div class="admin-section" id="gallerySection">
-      <h2>Manage Gallery Photos</h2>
-      <form id="addGalleryForm" enctype="multipart/form-data">
-        <input type="file" name="gallery" accept="image/*" required>
-        <button type="submit">Add Gallery Item</button>
-      </form>
-      <div id="adminGallery" class="admin-horizontal-container"></div>
-    </div>
+    <div class="admin-cards" id="adminDateIdeas"></div>
+  </section>
 
-  </div>
+  <!-- -------------------------
+       Songs Section
+  ------------------------- -->
+  <section class="admin-section" id="songsSection">
+    <h2>Songs</h2>
 
-  <script src="admin.js"></script>
+    <form id="addSongForm" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Song Title" required>
+      <input type="text" name="artist" placeholder="Artist" required>
+      <input type="text" name="reason" placeholder="Reason">
+      <input type="file" name="songFile" required>
+      <input type="file" name="songCover" required>
+      <button type="submit">Add Song</button>
+    </form>
+
+    <div class="admin-cards" id="adminSongs"></div>
+  </section>
+
+  <!-- -------------------------
+       Private Gallery Section
+  ------------------------- -->
+  <section class="admin-section" id="gallerySection">
+    <h2>Private Gallery</h2>
+
+    <form id="addGalleryForm" enctype="multipart/form-data">
+      <input type="file" name="gallery" required>
+      <button type="submit">Add Photo</button>
+    </form>
+
+    <div id="adminGallery"></div>
+  </section>
+
+</div>
+
+<script src="admin.js"></script>
 </body>
 </html>
