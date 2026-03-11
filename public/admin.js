@@ -1,119 +1,144 @@
-const adminForm = document.getElementById("adminLoginForm");
+/* =========================
+   ADMIN.JS
+========================= */
+
+const loginForm = document.getElementById("adminLoginForm");
 const adminContent = document.getElementById("adminContent");
 
-adminForm?.addEventListener("submit", async e => {
-  e.preventDefault();
-  const password = document.getElementById("adminPassword").value;
+if (loginForm) {
+  loginForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const password = document.getElementById("adminPassword").value;
 
-  try {
-    const res = await fetch("/admin-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password })
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/admin-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
 
-    if (data.success) {
-      adminForm.style.display = "none";
-      adminContent.style.display = "block";
+      const data = await res.json();
+      if (data.success) {
+        loginForm.parentElement.style.display = "none";
+        adminContent.style.display = "block";
+        loadAdminData();
+      } else {
+        alert("Login failed");
+      }
 
-      // Load admin content
-      loadAdminSongs();
-      loadAdminDateIdeas();
-      loadAdminGallery();
-    } else {
-      alert("Incorrect admin password");
+    } catch (err) {
+      console.error(err);
+      alert("Login error");
     }
-  } catch (err) {
-    console.error(err);
-    alert("Login failed");
-  }
-});
+  });
+}
 
-/* =========================
-   ADMIN SONGS
-========================= */
+/* ---------- LOAD ADMIN DATA ---------- */
+async function loadAdminData() {
+  loadAdminSongs();
+  loadAdminDates();
+  loadAdminGallery();
+}
+
+/* ---------- SONGS ---------- */
 async function loadAdminSongs() {
   const container = document.getElementById("adminSongs");
   if (!container) return;
 
-  const res = await fetch("/songs");
-  const songs = await res.json();
-  container.innerHTML = "";
+  try {
+    const res = await fetch("/songs");
+    const songs = await res.json();
+    container.innerHTML = "";
 
-  songs.forEach(song => {
-    const div = document.createElement("div");
-    div.className = "song-item";
-    div.innerHTML = `
-      <h4>${song.title}</h4>
-      <p>${song.artist}</p>
-      <button class="delete-btn" onclick="deleteSong('${song._id}')">Delete</button>
-    `;
-    container.appendChild(div);
-  });
+    songs.forEach(song => {
+      const div = document.createElement("div");
+      div.className = "song-item";
+      div.innerHTML = `
+        <h4>${song.title}</h4>
+        <p>${song.artist}</p>
+        <button class="delete-btn" data-id="${song._id}">Delete</button>
+      `;
+      container.appendChild(div);
+    });
+
+    // DELETE SONG
+    container.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        await fetch(`/admin/song/${id}`, { method: "DELETE" });
+        loadAdminSongs();
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-async function deleteSong(id) {
-  if (!confirm("Delete this song?")) return;
-  await fetch("/admin/song/" + id, { method: "DELETE" });
-  loadAdminSongs();
-}
-
-/* =========================
-   ADMIN DATE IDEAS
-========================= */
-async function loadAdminDateIdeas() {
-  const container = document.getElementById("adminDateIdeas");
+/* ---------- DATE IDEAS ---------- */
+async function loadAdminDates() {
+  const container = document.getElementById("adminDates");
   if (!container) return;
 
-  const res = await fetch("/dateIdeas");
-  const ideas = await res.json();
-  container.innerHTML = "";
+  try {
+    const res = await fetch("/dateIdeas");
+    const dates = await res.json();
+    container.innerHTML = "";
 
-  ideas.forEach(idea => {
-    const div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      <h4>${idea.title}</h4>
-      <p>${idea.description}</p>
-      <button class="delete-btn" onclick="deleteDateIdea('${idea._id}')">Delete</button>
-    `;
-    container.appendChild(div);
-  });
+    dates.forEach(date => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <h4>${date.title}</h4>
+        <button class="delete-btn" data-id="${date._id}">Delete</button>
+      `;
+      container.appendChild(div);
+    });
+
+    // DELETE DATE
+    container.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        await fetch(`/admin/date/${id}`, { method: "DELETE" });
+        loadAdminDates();
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-async function deleteDateIdea(id) {
-  if (!confirm("Delete this date idea?")) return;
-  await fetch("/admin/date/" + id, { method: "DELETE" });
-  loadAdminDateIdeas();
-}
-
-/* =========================
-   ADMIN GALLERY
-========================= */
+/* ---------- GALLERY ---------- */
 async function loadAdminGallery() {
   const container = document.getElementById("adminGallery");
   if (!container) return;
 
-  const res = await fetch("/gallery");
-  const photos = await res.json();
-  container.innerHTML = "";
+  try {
+    const res = await fetch("/gallery");
+    const photos = await res.json();
+    container.innerHTML = "";
 
-  photos.forEach(photo => {
-    const div = document.createElement("div");
-    div.className = "gallery-item";
-    div.innerHTML = `
-      <img src="${photo.url}" width="120">
-      <br>
-      <button class="delete-btn" onclick="deletePhoto('${photo._id}')">Delete</button>
-    `;
-    container.appendChild(div);
-  });
-}
+    photos.forEach(photo => {
+      const div = document.createElement("div");
+      div.className = "gallery-item";
+      div.innerHTML = `
+        <img src="${photo.url}" width="100">
+        <button class="delete-btn" data-id="${photo._id}">Delete</button>
+      `;
+      container.appendChild(div);
+    });
 
-async function deletePhoto(id) {
-  if (!confirm("Delete this photo?")) return;
-  await fetch("/admin/gallery/" + id, { method: "DELETE" });
-  loadAdminGallery();
-}
+    // DELETE PHOTO
+    container.querySelectorAll(".delete-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        await fetch(`/admin/gallery/${id}`, { method: "DELETE" });
+        loadAdminGallery();
+      });
+    });
+
+  } catch (err) {
+    console.error(err);
+  }
 }
