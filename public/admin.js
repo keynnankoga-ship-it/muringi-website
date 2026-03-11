@@ -1,66 +1,67 @@
-const BACKEND_URL = "https://hera-9pxh.onrender.com";
+/* =========================
+   ADMIN LOGIN
+========================= */
 
-const adminForm = document.getElementById("adminLoginForm");
-const adminContainer = document.getElementById("adminContent");
-const adminPasswordInput = document.getElementById("adminPassword");
+const adminForm = document.getElementById("adminLoginForm")
+const adminContainer = document.getElementById("adminContent")
+const adminPasswordInput = document.getElementById("adminPassword")
 
 adminForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const pass = adminPasswordInput.value;
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/admin-login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: pass })
-    });
+e.preventDefault()
 
-    const data = await res.json();
+const password = adminPasswordInput.value
 
-    if (data.success) {
-      adminForm.style.display = "none";
-      adminContainer.style.display = "block";
-      // Load admin sections
-      loadAdminDateIdeas();
-      loadAdminSongs();
-      loadAdminGallery();
-    } else {
-      alert("Incorrect password!");
-    }
-  } catch (err) {
-    console.error("Login error:", err);
-    alert("Something went wrong during login!");
-  }
-});
+try{
 
+const res = await fetch("/admin-login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({password})
+})
 
-document.getElementById("adminContent").style.display="block"
+const data = await res.json()
 
-loadSongs()
+if(data.success){
 
-loadDates()
+adminForm.style.display="none"
+adminContainer.style.display="block"
 
-loadGallery()
+loadAdminSongs()
+loadAdminDateIdeas()
+loadAdminGallery()
 
 }else{
 
-alert("Wrong password")
+alert("Incorrect admin password")
+
+}
+
+}catch(err){
+
+console.error(err)
+alert("Login failed")
 
 }
 
 })
 
+
 /* =========================
-LOAD SONGS
+   LOAD SONGS
 ========================= */
 
-async function loadSongs(){
+async function loadAdminSongs(){
+
+const container = document.getElementById("adminSongs")
+
+if(!container) return
 
 const res = await fetch("/songs")
 
 const songs = await res.json()
-
-const container = document.getElementById("adminSongs")
 
 container.innerHTML=""
 
@@ -72,13 +73,13 @@ div.className="song-item"
 
 div.innerHTML=`
 
-<img src="${song.cover}" width="120">
-
-<h3>${song.title}</h3>
+<h4>${song.title}</h4>
 
 <p>${song.artist}</p>
 
-<button class="delete-btn" onclick="deleteSong('${song._id}')">Delete</button>
+<button class="delete-btn" onclick="deleteSong('${song._id}')">
+Delete
+</button>
 
 `
 
@@ -88,65 +89,37 @@ container.appendChild(div)
 
 }
 
-/* =========================
-ADD SONG
-========================= */
-
-document.getElementById("songForm").addEventListener("submit", async e=>{
-
-e.preventDefault()
-
-const formData=new FormData(e.target)
-
-const data=Object.fromEntries(formData)
-
-await fetch("/admin/addSong",{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify(data)
-
-})
-
-e.target.reset()
-
-loadSongs()
-
-})
 
 /* =========================
-DELETE SONG
+   DELETE SONG
 ========================= */
 
 async function deleteSong(id){
 
-await fetch(`/admin/deleteSong/${id}`,{
+if(!confirm("Delete this song?")) return
 
+await fetch("/admin/song/"+id,{
 method:"DELETE"
-
 })
 
-loadSongs()
+loadAdminSongs()
 
 }
 
+
 /* =========================
-LOAD DATE IDEAS
+   LOAD DATE IDEAS
 ========================= */
 
-async function loadDates(){
+async function loadAdminDateIdeas(){
+
+const container=document.getElementById("adminDateIdeas")
+
+if(!container) return
 
 const res=await fetch("/dateIdeas")
 
 const ideas=await res.json()
-
-const container=document.getElementById("adminDates")
 
 container.innerHTML=""
 
@@ -158,11 +131,13 @@ div.className="item"
 
 div.innerHTML=`
 
-<h3>${idea.title}</h3>
+<h4>${idea.title}</h4>
 
 <p>${idea.description}</p>
 
-<button class="delete-btn" onclick="deleteDate('${idea._id}')">Delete</button>
+<button class="delete-btn" onclick="deleteDateIdea('${idea._id}')">
+Delete
+</button>
 
 `
 
@@ -172,57 +147,37 @@ container.appendChild(div)
 
 }
 
-/* =========================
-ADD DATE IDEA
-========================= */
-
-document.getElementById("dateForm").addEventListener("submit", async e=>{
-
-e.preventDefault()
-
-const formData=new FormData(e.target)
-
-await fetch("/admin/addDateIdea",{
-
-method:"POST",
-
-body:formData
-
-})
-
-e.target.reset()
-
-loadDates()
-
-})
 
 /* =========================
-DELETE DATE IDEA
+   DELETE DATE IDEA
 ========================= */
 
-async function deleteDate(id){
+async function deleteDateIdea(id){
 
-await fetch(`/admin/deleteDateIdea/${id}`,{
+if(!confirm("Delete this date idea?")) return
 
+await fetch("/admin/date/"+id,{
 method:"DELETE"
-
 })
 
-loadDates()
+loadAdminDateIdeas()
 
 }
 
+
 /* =========================
-LOAD GALLERY
+   LOAD GALLERY
 ========================= */
 
-async function loadGallery(){
-
-const res=await fetch("/galleryPhotos")
-
-const photos=await res.json()
+async function loadAdminGallery(){
 
 const container=document.getElementById("adminGallery")
+
+if(!container) return
+
+const res=await fetch("/gallery")
+
+const photos=await res.json()
 
 container.innerHTML=""
 
@@ -236,7 +191,11 @@ div.innerHTML=`
 
 <img src="${photo.url}" width="120">
 
-<button class="delete-btn" onclick="deletePhoto('${photo._id}')">Delete</button>
+<br>
+
+<button class="delete-btn" onclick="deletePhoto('${photo._id}')">
+Delete
+</button>
 
 `
 
@@ -246,18 +205,19 @@ container.appendChild(div)
 
 }
 
+
 /* =========================
-DELETE PHOTO
+   DELETE GALLERY PHOTO
 ========================= */
 
 async function deletePhoto(id){
 
-await fetch(`/admin/deletePhoto/${id}`,{
+if(!confirm("Delete this photo?")) return
 
+await fetch("/admin/gallery/"+id,{
 method:"DELETE"
-
 })
 
-loadGallery()
+loadAdminGallery()
 
 }
