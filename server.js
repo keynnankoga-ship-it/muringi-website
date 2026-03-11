@@ -8,6 +8,7 @@ const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
 const fs = require("fs");
+const session = require("express-session");
 
 const app = express();
 
@@ -20,12 +21,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 /* =========================
+   Admin Session
+========================= */
+app.use(session({
+  secret: process.env.ADMIN_PASS,
+  resave: false,
+  saveUninitialized: true
+}));
+
+/* =========================
    MongoDB Connection
 ========================= */
-mongoose
-  .connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
-  .catch((err) => console.log(err));
+  .catch(err => console.log(err));
 
 /* =========================
    Cloudinary Config
@@ -33,15 +42,15 @@ mongoose
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_KEY,
-  api_secret: process.env.CLOUD_SECRET,
+  api_secret: process.env.CLOUD_SECRET
 });
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: "muringi-gallery",
-    allowed_formats: ["jpg", "png", "jpeg"],
-  },
+    allowed_formats: ["jpg", "png", "jpeg"]
+  }
 });
 
 const upload = multer({ storage });
@@ -49,87 +58,139 @@ const upload = multer({ storage });
 /* =========================
    Models
 ========================= */
-const Affirmation = mongoose.model(
-  "Affirmation",
-  new mongoose.Schema({
-    text: String,
-  })
-);
+const Affirmation = mongoose.model("Affirmation", new mongoose.Schema({ text: String }));
+const Song = mongoose.model("Song", new mongoose.Schema({
+  title: String,
+  artist: String,
+  cover: String,
+  audio: String
+}));
+const DateIdea = mongoose.model("DateIdea", new mongoose.Schema({
+  title: String,
+  description: String,
+  photos: [String]
+}));
+const Gallery = mongoose.model("Gallery", new mongoose.Schema({ url: String }));
 
-const Song = mongoose.model(
-  "Song",
-  new mongoose.Schema({
-    title: String,
-    artist: String,
-    cover: String,
-    audio: String,
-  })
-);
+/* =========================
+   Admin Protection Middleware
+========================= */
+function requireAdmin(req, res, next) {
+  if (req.session && req.session.admin) return next();
+  return res.status(401).json({ success: false, message: "Unauthorized" });
+}
 
-const DateIdea = mongoose.model(
-  "DateIdea",
-  new mongoose.Schema({
-    title: String,
-    description: String,
-    photos: [String],
-  })
-);
-
-const Gallery = mongoose.model(
-  "Gallery",
-  new mongoose.Schema({
-    url: String,
-  })
-);
+/* =========================
+   Firebase Config Route
+========================= */
+app.get("/firebase-config", (req, res) => {
+  res.json({
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    vapidKey: process.env.FIREBASE_VAPID_KEY
+  });
+});
 
 /* =========================
    Routes
 ========================= */
 
-/* ---------- Daily Affirmations ---------- */
-// Returns the same affirmation per day
+/* Daily Affirmation (366-day system) */
 app.get("/affirmations", (req, res) => {
-  const filePath = path.join(__dirname, "data", "affirmations.json");
-  const affirmations = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  try {
+    const filePath = path.join(__dirname, "data", "affirmations.json");
+    const affirmations = JSON.parse(fs.readFileSync(filePath, "utf8"));
 
-  // Pick one per day based on date
-  const todayIndex = new Date().getDate() % affirmations.length;
-  res.json({ text: affirmations[todayIndex] });
+    if (!affirmations.length) return res.json([{ text: "You are loved." }]);
+
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    const index = dayOfYear % affirmations.length;
+    res.json(affirmations[index]);
+  } catch (err) {
+    res.status(500).json({ error: "Affirmations failed" });
+  }
 });
 
-/* ---------- Songs ---------- */
+/* Songs */
 app.get("/songs", async (req, res) => {
-  const songs = await Song.find();
-  res.json(songs);
+  try {
+    const songs = await Song.find();
+    res.json(songs);
+  } catch (err) {
+    res.status(500).json({ error: "Songs failed" });
+  }
 });
 
-/* ---------- Song of the Day ---------- */
+/* Song of the Day */
 app.get("/song-of-the-day", async (req, res) => {
-  const songs = await Song.find();
-  if (!songs.length) return res.json({});
-  const todayIndex = new Date().getDate() % songs.length;
-  res.json(songs[todayIndex]);
+  try {
+    const songs = await Song.find();
+    if (!songs.length) return res.json({});
+
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    const index = dayOfYear % songs.length;
+    res.json(songs[index]);
+  } catch (err) {
+    res.status(500).json({ error: "Song of the day failed" });
+  }
 });
 
-/* ---------- Date Ideas ---------- */
+/* Date Ideas */
 app.get("/dateIdeas", async (req, res) => {
-  const ideas = await DateIdea.find();
-  res.json(ideas);
+  try {
+    const ideas = await DateIdea.find();
+    res.json(ideas);
+  } catch (err) {
+    res.status(500).json({ error: "Date ideas failed" });
+  }
 });
 
-/* ---------- Gallery Photos ---------- */
+/* Gallery */
 app.get("/gallery", async (req, res) => {
-  const photos = await Gallery.find();
-  res.json(photos);
+  try {
+    const photos = await Gallery.find();
+    res.json(photos);
+  } catch (err) {
+    res.status(500).json({ error: "Gallery failed" });
+  }
 });
 
 /* =========================
-   User Uploads
+   User Upload (Gallery only)
 ========================= */
 app.post("/upload-gallery", upload.single("photo"), async (req, res) => {
-  const photo = new Gallery({ url: req.file.path });
-  await photo.save();
-  res.json({ success: true });
+  try {
+    const photo = new Gallery({ url: req.file.path });
+    await photo.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Upload failed" });
+  }
+});
+
+/* =========================
+   Admin Login
+========================= */
+app.post("/admin-login", (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ADMIN_PASS) {
+    req.session.admin = true;
+    return res.json({ success: true });
+  }
+  res.json({ success: false });
 });
 
 /* =========================
@@ -137,50 +198,59 @@ app.post("/upload-gallery", upload.single("photo"), async (req, res) => {
 ========================= */
 
 /* Add Song */
-app.post("/admin/song", async (req, res) => {
-  const song = new Song(req.body);
-  await song.save();
-  res.json({ success: true });
+app.post("/admin/song", requireAdmin, async (req, res) => {
+  try {
+    const song = new Song(req.body);
+    await song.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Song add failed" });
+  }
 });
 
 /* Delete Song */
-app.delete("/admin/song/:id", async (req, res) => {
-  await Song.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
+app.delete("/admin/song/:id", requireAdmin, async (req, res) => {
+  try {
+    await Song.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Song delete failed" });
+  }
 });
 
 /* Add Date Idea */
-app.post("/admin/date", upload.array("photos"), async (req, res) => {
-  const photoUrls = req.files.map((file) => file.path);
-  const idea = new DateIdea({
-    title: req.body.title,
-    description: req.body.description,
-    photos: photoUrls,
-  });
-  await idea.save();
-  res.json({ success: true });
+app.post("/admin/date", requireAdmin, upload.array("photos"), async (req, res) => {
+  try {
+    const photoUrls = req.files.map(file => file.path);
+    const idea = new DateIdea({
+      title: req.body.title,
+      description: req.body.description,
+      photos: photoUrls
+    });
+    await idea.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Date idea failed" });
+  }
 });
 
 /* Delete Date Idea */
-app.delete("/admin/date/:id", async (req, res) => {
-  await DateIdea.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
+app.delete("/admin/date/:id", requireAdmin, async (req, res) => {
+  try {
+    await DateIdea.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Delete failed" });
+  }
 });
 
 /* Delete Gallery Photo */
-app.delete("/admin/gallery/:id", async (req, res) => {
-  await Gallery.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
-});
-
-// Admin login
-app.post("/admin-login", (req, res) => {
-  const { password } = req.body;
-
-  if (password === process.env.ADMIN_PASS) {
-    return res.json({ success: true });
-  } else {
-    return res.json({ success: false });
+app.delete("/admin/gallery/:id", requireAdmin, async (req, res) => {
+  try {
+    await Gallery.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Gallery delete failed" });
   }
 });
 
@@ -188,4 +258,6 @@ app.post("/admin-login", (req, res) => {
    Start Server
 ========================= */
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT} ✅`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} ✅`);
+});

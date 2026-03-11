@@ -3,7 +3,7 @@
 ========================= */
 
 const adminForm = document.getElementById("adminLoginForm")
-const adminContainer = document.getElementById("adminContent")
+const adminContent = document.getElementById("adminContent")
 const adminPasswordInput = document.getElementById("adminPassword")
 
 adminForm?.addEventListener("submit", async (e) => {
@@ -15,11 +15,15 @@ const password = adminPasswordInput.value
 try{
 
 const res = await fetch("/admin-login",{
+
 method:"POST",
+
 headers:{
 "Content-Type":"application/json"
 },
+
 body:JSON.stringify({password})
+
 })
 
 const data = await res.json()
@@ -27,7 +31,7 @@ const data = await res.json()
 if(data.success){
 
 adminForm.style.display="none"
-adminContainer.style.display="block"
+adminContent.style.display="block"
 
 loadAdminSongs()
 loadAdminDateIdeas()
@@ -48,7 +52,6 @@ alert("Login failed")
 
 })
 
-
 /* =========================
    LOAD SONGS
 ========================= */
@@ -59,7 +62,16 @@ const container = document.getElementById("adminSongs")
 
 if(!container) return
 
+try{
+
 const res = await fetch("/songs")
+
+if(res.status===401){
+
+alert("Admin session expired")
+location.reload()
+return
+}
 
 const songs = await res.json()
 
@@ -87,8 +99,13 @@ container.appendChild(div)
 
 })
 
+}catch(err){
+
+console.error("Songs failed",err)
+
 }
 
+}
 
 /* =========================
    DELETE SONG
@@ -98,14 +115,21 @@ async function deleteSong(id){
 
 if(!confirm("Delete this song?")) return
 
+try{
+
 await fetch("/admin/song/"+id,{
 method:"DELETE"
 })
 
 loadAdminSongs()
 
+}catch(err){
+
+console.error("Delete failed",err)
+
 }
 
+}
 
 /* =========================
    LOAD DATE IDEAS
@@ -117,7 +141,16 @@ const container=document.getElementById("adminDateIdeas")
 
 if(!container) return
 
+try{
+
 const res=await fetch("/dateIdeas")
+
+if(res.status===401){
+
+alert("Admin session expired")
+location.reload()
+return
+}
 
 const ideas=await res.json()
 
@@ -145,8 +178,13 @@ container.appendChild(div)
 
 })
 
+}catch(err){
+
+console.error("Date ideas failed",err)
+
 }
 
+}
 
 /* =========================
    DELETE DATE IDEA
@@ -156,14 +194,21 @@ async function deleteDateIdea(id){
 
 if(!confirm("Delete this date idea?")) return
 
+try{
+
 await fetch("/admin/date/"+id,{
 method:"DELETE"
 })
 
 loadAdminDateIdeas()
 
+}catch(err){
+
+console.error("Delete failed",err)
+
 }
 
+}
 
 /* =========================
    LOAD GALLERY
@@ -175,7 +220,16 @@ const container=document.getElementById("adminGallery")
 
 if(!container) return
 
+try{
+
 const res=await fetch("/gallery")
+
+if(res.status===401){
+
+alert("Admin session expired")
+location.reload()
+return
+}
 
 const photos=await res.json()
 
@@ -203,8 +257,13 @@ container.appendChild(div)
 
 })
 
+}catch(err){
+
+console.error("Gallery load failed",err)
+
 }
 
+}
 
 /* =========================
    DELETE GALLERY PHOTO
@@ -214,10 +273,18 @@ async function deletePhoto(id){
 
 if(!confirm("Delete this photo?")) return
 
+try{
+
 await fetch("/admin/gallery/"+id,{
 method:"DELETE"
 })
 
 loadAdminGallery()
+
+}catch(err){
+
+console.error("Delete failed",err)
+
+}
 
 }

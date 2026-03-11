@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Gallery</title>
 
@@ -12,43 +15,96 @@
 <body>
 
 <nav>
-
-<div class="logo">Gallery</div>
-
-<a href="/">Back</a>
-
+  <div class="logo">Gallery</div>
+  <a href="/">Back</a>
 </nav>
 
-<h2>Our Memories</h2>
+<h2 style="text-align:center;margin:20px 0;">Our Memories</h2>
 
 <div class="gallery" id="galleryContainer"></div>
 
+<!-- Lightbox for viewing images -->
+<div id="lightbox" class="lightbox" style="display:none;">
+  <img src="" id="lightbox-img">
+</div>
+
 <script>
+/* =========================
+   LOAD GALLERY
+========================= */
+async function loadGallery() {
+  try {
+    const res = await fetch("/gallery");
+    const photos = await res.json();
 
-async function loadGallery(){
+    const container = document.getElementById("galleryContainer");
+    container.innerHTML = "";
 
-const res = await fetch("/galleryPhotos")
+    photos.forEach(photo => {
+      const img = document.createElement("img");
+      img.src = photo.url;
+      img.alt = "Gallery Photo";
+      img.style.cursor = "pointer";
 
-const photos = await res.json()
+      img.addEventListener("click", () => {
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        lightbox.style.display = "flex";
+        lightboxImg.src = photo.url;
+      });
 
-const container = document.getElementById("galleryContainer")
-
-photos.forEach(photo=>{
-
-const img=document.createElement("img")
-
-img.src=photo.url
-
-container.appendChild(img)
-
-})
-
+      container.appendChild(img);
+    });
+  } catch (err) {
+    console.error(err);
+    document.getElementById("galleryContainer").innerHTML =
+      "<p>Failed to load gallery.</p>";
+  }
 }
 
-loadGallery()
+/* =========================
+   LIGHTBOX CLOSE
+========================= */
+document.getElementById("lightbox").addEventListener("click", () => {
+  document.getElementById("lightbox").style.display = "none";
+});
 
+/* =========================
+   ENABLE SWIPE FOR MOBILE
+========================= */
+function enableSwipeGallery() {
+  const gallery = document.getElementById("galleryContainer");
+  if (!gallery) return;
+
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+
+  gallery.addEventListener("mousedown", e => {
+    isDown = true;
+    startX = e.pageX - gallery.offsetLeft;
+    scrollLeft = gallery.scrollLeft;
+  });
+
+  gallery.addEventListener("mouseleave", () => isDown = false);
+  gallery.addEventListener("mouseup", () => isDown = false);
+  gallery.addEventListener("mousemove", e => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - gallery.offsetLeft;
+    const walk = (x - startX) * 2;
+    gallery.scrollLeft = scrollLeft - walk;
+  });
+}
+
+/* =========================
+   INIT
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  loadGallery();
+  enableSwipeGallery();
+});
 </script>
 
 </body>
-
 </html>

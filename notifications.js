@@ -1,27 +1,43 @@
-const firebaseConfig = {
-apiKey: "AIzaSyB1zmsXUaKHiFjnpUg1ddanoqaRSooI4aI",
-authDomain: "muringi-website.firebaseapp.com",
-projectId: "muringi-website",
-messagingSenderId: "672701127341",
-appId: "1:672701127341:web:29174119759439bbba8424"
-};
+/* =========================
+   NOTIFICATIONS (FIREBASE)
+========================= */
 
-firebase.initializeApp(firebaseConfig);
+async function initNotifications() {
+  try {
+    // Fetch Firebase config from server (loaded from .env)
+    const res = await fetch("/firebase-config");
+    if (!res.ok) throw new Error("Failed to fetch Firebase config");
 
-const messaging = firebase.messaging();
+    const config = await res.json();
 
-async function initNotifications(){
+    // Initialize Firebase app
+    firebase.initializeApp({
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId
+    });
 
-const permission = await Notification.requestPermission();
+    const messaging = firebase.messaging();
 
-if(permission !== "granted") return;
+    // Request notification permission
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      console.log("Notification permission denied");
+      return;
+    }
 
-const token = await messaging.getToken({
-vapidKey:"BHRq_0wSJWB3JfS8P77hzDQ7kPED3wQst2cuOy--h9oUiejrDb7l-iLXDXa5EbvLhMOXd6m9QP6xX7FW6RFpmyM"
-});
+    // Get FCM token
+    const token = await messaging.getToken({ vapidKey: config.vapidKey });
+    console.log("Notification Token:", token);
 
-console.log("Notification Token:",token);
+    // You can now send this token to your server to store and send push notifications
 
+  } catch (err) {
+    console.error("Failed to initialize notifications:", err);
+  }
 }
 
+// Initialize notifications on page load
 initNotifications();

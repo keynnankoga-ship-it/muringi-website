@@ -4,36 +4,41 @@
 
 async function loadAffirmation() {
 
+  const el = document.getElementById("affirmation-text")
+
+  if (!el) return
+
   try {
 
     const today = new Date().toDateString()
+
     const storedDate = localStorage.getItem("affirmationDate")
-    const storedAffirmation = localStorage.getItem("affirmationText")
 
-    if (storedDate === today && storedAffirmation) {
+    const storedText = localStorage.getItem("affirmationText")
 
-      document.getElementById("affirmation-text").innerText = storedAffirmation
+    if (storedDate === today && storedText) {
+
+      el.innerText = storedText
       return
 
     }
 
     const res = await fetch("/affirmations")
-    const affirmations = await res.json()
 
-    const random =
-      affirmations[Math.floor(Math.random() * affirmations.length)]
+    const data = await res.json()
 
-    document.getElementById("affirmation-text").innerText = random.text
+    el.innerText = data.text
 
     localStorage.setItem("affirmationDate", today)
-    localStorage.setItem("affirmationText", random.text)
+
+    localStorage.setItem("affirmationText", data.text)
 
   } catch (err) {
 
-    document.getElementById("affirmation-text").innerText =
-      "You are amazing and today will be a good day ❤️"
+    el.innerText = "You are amazing and today will be a good day ❤️"
 
   }
+
 }
 
 /* =========================
@@ -44,49 +49,57 @@ async function loadSongOfDay() {
 
   const container = document.getElementById("dailySong")
 
+  if (!container) return
+
   try {
 
     const today = new Date().toDateString()
+
     const storedDate = localStorage.getItem("songDate")
+
     const storedSong = localStorage.getItem("songData")
 
     if (storedDate === today && storedSong) {
 
       const song = JSON.parse(storedSong)
 
-      container.innerHTML = `
-        <div class="song">
-        <img src="${song.cover}" width="200">
-        <h3>${song.title}</h3>
-        <p>${song.artist}</p>
-        <audio controls src="${song.audio}"></audio>
-        </div>
-      `
+      renderSong(container, song)
+
       return
+
     }
 
-    const res = await fetch("/songs")
-    const songs = await res.json()
+    const res = await fetch("/song-of-the-day")
 
-    const random = songs[Math.floor(Math.random() * songs.length)]
+    const song = await res.json()
 
-    container.innerHTML = `
-      <div class="song">
-      <img src="${random.cover}" width="200">
-      <h3>${random.title}</h3>
-      <p>${random.artist}</p>
-      <audio controls src="${random.audio}"></audio>
-      </div>
-    `
+    renderSong(container, song)
 
     localStorage.setItem("songDate", today)
-    localStorage.setItem("songData", JSON.stringify(random))
+
+    localStorage.setItem("songData", JSON.stringify(song))
 
   } catch (err) {
 
-    container.innerHTML = `<p>Song unavailable</p>`
+    container.innerHTML = "<p>Song unavailable</p>"
 
   }
+
+}
+
+function renderSong(container, song) {
+
+  if (!song) return
+
+  container.innerHTML = `
+    <div class="song">
+      <img src="${song.cover}" width="200">
+      <h3>${song.title}</h3>
+      <p>${song.artist}</p>
+      <audio controls src="${song.audio}"></audio>
+    </div>
+  `
+
 }
 
 /* =========================
@@ -99,33 +112,41 @@ async function loadSongs() {
 
   if (!container) return
 
-  const res = await fetch("/songs")
+  try {
 
-  const songs = await res.json()
+    const res = await fetch("/songs")
 
-  container.innerHTML = ""
+    const songs = await res.json()
 
-  songs.forEach(song => {
+    container.innerHTML = ""
 
-    const div = document.createElement("div")
+    songs.forEach(song => {
 
-    div.className = "song"
+      const div = document.createElement("div")
 
-    div.innerHTML = `
-      <img src="${song.cover}" width="200">
-      <h3>${song.title}</h3>
-      <p>${song.artist}</p>
-      <audio controls src="${song.audio}"></audio>
-    `
+      div.className = "song"
 
-    container.appendChild(div)
+      div.innerHTML = `
+        <img src="${song.cover}" width="200">
+        <h3>${song.title}</h3>
+        <p>${song.artist}</p>
+        <audio controls src="${song.audio}"></audio>
+      `
 
-  })
+      container.appendChild(div)
+
+    })
+
+  } catch (err) {
+
+    container.innerHTML = "<p>Music unavailable</p>"
+
+  }
 
 }
 
 /* =========================
-   DATE IDEAS
+   DATE IDEAS (DISPLAY ONLY)
 ========================= */
 
 async function loadDateIdeas() {
@@ -134,39 +155,47 @@ async function loadDateIdeas() {
 
   if (!container) return
 
-  const res = await fetch("/dateIdeas")
+  try {
 
-  const ideas = await res.json()
+    const res = await fetch("/dateIdeas")
 
-  container.innerHTML = ""
+    const ideas = await res.json()
 
-  ideas.forEach(idea => {
+    container.innerHTML = ""
 
-    const div = document.createElement("div")
+    ideas.forEach(idea => {
 
-    div.className = "date-card"
+      const div = document.createElement("div")
 
-    let photosHTML = ""
+      div.className = "date-card"
 
-    if (idea.photos) {
+      let photosHTML = ""
 
-      idea.photos.forEach(p => {
+      if (idea.photos) {
 
-        photosHTML += `<img src="${p}" />`
+        idea.photos.forEach(p => {
 
-      })
+          photosHTML += `<img src="${p}" class="date-photo">`
 
-    }
+        })
 
-    div.innerHTML = `
-      <h3>${idea.title}</h3>
-      <p>${idea.description}</p>
-      <div class="date-photos">${photosHTML}</div>
-    `
+      }
 
-    container.appendChild(div)
+      div.innerHTML = `
+        <h3>${idea.title}</h3>
+        <p>${idea.description}</p>
+        <div class="date-photos">${photosHTML}</div>
+      `
 
-  })
+      container.appendChild(div)
+
+    })
+
+  } catch (err) {
+
+    container.innerHTML = "<p>Date ideas unavailable</p>"
+
+  }
 
 }
 
@@ -184,18 +213,26 @@ if (uploadForm) {
 
     const fileInput = document.getElementById("photoInput")
 
+    if (!fileInput.files.length) return
+
     const formData = new FormData()
 
     formData.append("photo", fileInput.files[0])
 
-    await fetch("/uploadPhoto", {
+    try {
 
-      method: "POST",
-      body: formData
+      await fetch("/upload-gallery", {
+        method: "POST",
+        body: formData
+      })
 
-    })
+      location.reload()
 
-    location.reload()
+    } catch (err) {
+
+      alert("Upload failed")
+
+    }
 
   })
 
@@ -209,19 +246,18 @@ function enableGalleryLightbox() {
 
   const gallery = document.getElementById("photoGallery")
 
-  if (!gallery) return
-
-  const images = gallery.querySelectorAll("img")
-
   const lightbox = document.getElementById("lightbox")
 
   const lightboxImg = document.getElementById("lightbox-img")
 
-  images.forEach(img => {
+  if (!gallery || !lightbox) return
+
+  gallery.querySelectorAll("img").forEach(img => {
 
     img.addEventListener("click", () => {
 
       lightbox.style.display = "flex"
+
       lightboxImg.src = img.src
 
     })
@@ -250,10 +286,14 @@ function enableSwipeGallery() {
   let startX
   let scrollLeft
 
+  /* Desktop drag */
+
   gallery.addEventListener("mousedown", e => {
 
     isDown = true
+
     startX = e.pageX - gallery.offsetLeft
+
     scrollLeft = gallery.scrollLeft
 
   })
@@ -277,6 +317,26 @@ function enableSwipeGallery() {
     e.preventDefault()
 
     const x = e.pageX - gallery.offsetLeft
+
+    const walk = (x - startX) * 2
+
+    gallery.scrollLeft = scrollLeft - walk
+
+  })
+
+  /* Mobile swipe */
+
+  gallery.addEventListener("touchstart", e => {
+
+    startX = e.touches[0].pageX
+
+    scrollLeft = gallery.scrollLeft
+
+  })
+
+  gallery.addEventListener("touchmove", e => {
+
+    const x = e.touches[0].pageX
 
     const walk = (x - startX) * 2
 

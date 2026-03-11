@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Admin Dashboard</title>
+<title>Muringi Admin Dashboard</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -14,21 +14,37 @@
 
 <body>
 
+<!-- =========================
+NAVBAR
+========================= -->
+
 <nav>
 
-<div class="logo">Admin Dashboard</div>
+<div class="logo">Muringi Admin</div>
+
+<div>
+<button id="logoutBtn" style="display:none;">Logout</button>
+</div>
 
 </nav>
 
-<!-- ADMIN LOGIN -->
 
-<div id="adminLogin">
+<!-- =========================
+ADMIN LOGIN
+========================= -->
+
+<div id="adminLogin" class="admin-login">
 
 <h2>Admin Login</h2>
 
-<form id="adminLoginForm">
+<form id="adminLoginForm" autocomplete="off">
 
-<input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+<input 
+type="password" 
+id="adminPassword" 
+placeholder="Enter Admin Password" 
+required
+>
 
 <button type="submit">Login</button>
 
@@ -36,13 +52,19 @@
 
 </div>
 
-<!-- ADMIN CONTENT -->
+
+<!-- =========================
+ADMIN DASHBOARD
+========================= -->
 
 <div id="adminContent">
 
-<!-- SONG MANAGEMENT -->
 
-<div class="admin-section">
+<!-- =========================
+SONG MANAGEMENT
+========================= -->
+
+<section class="admin-section">
 
 <h2>Add Song</h2>
 
@@ -60,13 +82,19 @@
 
 </form>
 
+<h3>Existing Songs</h3>
+
 <div class="admin-horizontal-container" id="adminSongs"></div>
 
-</div>
+</section>
 
-<!-- DATE IDEAS -->
 
-<div class="admin-section">
+
+<!-- =========================
+DATE IDEAS
+========================= -->
+
+<section class="admin-section">
 
 <h2>Add Date Idea</h2>
 
@@ -82,21 +110,35 @@
 
 </form>
 
-<div class="admin-horizontal-container" id="adminDates"></div>
+<h3>Existing Date Ideas</h3>
 
-</div>
+<div class="admin-horizontal-container" id="adminDateIdeas"></div>
 
-<!-- GALLERY MANAGEMENT -->
+</section>
 
-<div class="admin-section">
+
+
+<!-- =========================
+GALLERY MANAGEMENT
+========================= -->
+
+<section class="admin-section">
 
 <h2>Gallery Photos</h2>
 
+<p>Uploaded photos from users</p>
+
 <div class="admin-horizontal-container" id="adminGallery"></div>
 
-</div>
+</section>
+
 
 </div>
+
+
+<!-- =========================
+ADMIN SCRIPT
+========================= -->
 
 <script src="admin.js"></script>
 
