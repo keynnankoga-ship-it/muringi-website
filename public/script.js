@@ -1,367 +1,190 @@
 /* =========================
    DAILY AFFIRMATION
 ========================= */
-
 async function loadAffirmation() {
-
-  const el = document.getElementById("affirmation-text")
-
-  if (!el) return
-
+  const container = document.getElementById("affirmation-text");
   try {
+    const res = await fetch("/affirmations");
+    const affirmations = await res.json();
 
-    const today = new Date().toDateString()
-
-    const storedDate = localStorage.getItem("affirmationDate")
-
-    const storedText = localStorage.getItem("affirmationText")
-
-    if (storedDate === today && storedText) {
-
-      el.innerText = storedText
-      return
-
+    if (!affirmations || affirmations.length === 0) {
+      container.innerText = "You are amazing and today will be a good day ❤️";
+      return;
     }
 
-    const res = await fetch("/affirmations")
+    // 366-day system
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
 
-    const data = await res.json()
-
-    el.innerText = data.text
-
-    localStorage.setItem("affirmationDate", today)
-
-    localStorage.setItem("affirmationText", data.text)
-
+    const index = dayOfYear % affirmations.length;
+    container.innerText = affirmations[index].text;
   } catch (err) {
-
-    el.innerText = "You are amazing and today will be a good day ❤️"
-
+    container.innerText = "You are amazing and today will be a good day ❤️";
   }
-
 }
 
 /* =========================
-   SONG OF THE DAY
+   SONGS (Playlist + Song of the Day)
 ========================= */
-
-async function loadSongOfDay() {
-
-  const container = document.getElementById("dailySong")
-
-  if (!container) return
-
-  try {
-
-    const today = new Date().toDateString()
-
-    const storedDate = localStorage.getItem("songDate")
-
-    const storedSong = localStorage.getItem("songData")
-
-    if (storedDate === today && storedSong) {
-
-      const song = JSON.parse(storedSong)
-
-      renderSong(container, song)
-
-      return
-
-    }
-
-    const res = await fetch("/song-of-the-day")
-
-    const song = await res.json()
-
-    renderSong(container, song)
-
-    localStorage.setItem("songDate", today)
-
-    localStorage.setItem("songData", JSON.stringify(song))
-
-  } catch (err) {
-
-    container.innerHTML = "<p>Song unavailable</p>"
-
-  }
-
-}
-
-function renderSong(container, song) {
-
-  if (!song) return
-
-  container.innerHTML = `
-    <div class="song">
-      <img src="${song.cover}" width="200">
-      <h3>${song.title}</h3>
-      <p>${song.artist}</p>
-      <audio controls src="${song.audio}"></audio>
-    </div>
-  `
-
-}
-
-/* =========================
-   LOAD PLAYLIST
-========================= */
-
 async function loadSongs() {
-
-  const container = document.getElementById("playlist")
-
-  if (!container) return
+  const container = document.getElementById("playlist");
+  if (!container) return;
 
   try {
-
-    const res = await fetch("/songs")
-
-    const songs = await res.json()
-
-    container.innerHTML = ""
+    const res = await fetch("/songs");
+    const songs = await res.json();
+    container.innerHTML = "";
 
     songs.forEach(song => {
-
-      const div = document.createElement("div")
-
-      div.className = "song"
+      const div = document.createElement("div");
+      div.className = "song";
 
       div.innerHTML = `
         <img src="${song.cover}" width="200">
         <h3>${song.title}</h3>
         <p>${song.artist}</p>
         <audio controls src="${song.audio}"></audio>
-      `
+      `;
+      container.appendChild(div);
+    });
 
-      container.appendChild(div)
-
-    })
-
+    // Song of the Day
+    const dayRes = await fetch("/song-of-the-day");
+    const daySong = await dayRes.json();
+    const dailyContainer = document.getElementById("dailySong");
+    if (daySong && dailyContainer) {
+      dailyContainer.innerHTML = `
+        <div class="song">
+          <img src="${daySong.cover}" width="200">
+          <h3>${daySong.title}</h3>
+          <p>${daySong.artist}</p>
+          <audio controls src="${daySong.audio}"></audio>
+        </div>
+      `;
+    }
   } catch (err) {
-
-    container.innerHTML = "<p>Music unavailable</p>"
-
+    console.error(err);
   }
-
 }
 
 /* =========================
-   DATE IDEAS (DISPLAY ONLY)
+   DATE IDEAS
 ========================= */
-
 async function loadDateIdeas() {
-
-  const container = document.getElementById("dateIdeas")
-
-  if (!container) return
+  const container = document.getElementById("dateIdeas");
+  if (!container) return;
 
   try {
-
-    const res = await fetch("/dateIdeas")
-
-    const ideas = await res.json()
-
-    container.innerHTML = ""
+    const res = await fetch("/dateIdeas");
+    const ideas = await res.json();
+    container.innerHTML = "";
 
     ideas.forEach(idea => {
+      const div = document.createElement("div");
+      div.className = "date-card";
 
-      const div = document.createElement("div")
-
-      div.className = "date-card"
-
-      let photosHTML = ""
-
+      let photosHTML = "";
       if (idea.photos) {
-
         idea.photos.forEach(p => {
-
-          photosHTML += `<img src="${p}" class="date-photo">`
-
-        })
-
+          photosHTML += `<img src="${p}" />`;
+        });
       }
 
       div.innerHTML = `
         <h3>${idea.title}</h3>
         <p>${idea.description}</p>
         <div class="date-photos">${photosHTML}</div>
-      `
-
-      container.appendChild(div)
-
-    })
-
+      `;
+      container.appendChild(div);
+    });
   } catch (err) {
-
-    container.innerHTML = "<p>Date ideas unavailable</p>"
-
+    console.error(err);
   }
-
 }
 
 /* =========================
-   GALLERY UPLOAD
+   GALLERY
 ========================= */
+async function loadGallery() {
+  const container = document.getElementById("photoGallery");
+  if (!container) return;
 
-const uploadForm = document.getElementById("uploadForm")
+  try {
+    const res = await fetch("/gallery");
+    const photos = await res.json();
+    container.innerHTML = "";
 
-if (uploadForm) {
+    photos.forEach(photo => {
+      const img = document.createElement("img");
+      img.src = photo.url;
+      container.appendChild(img);
+    });
 
-  uploadForm.addEventListener("submit", async e => {
-
-    e.preventDefault()
-
-    const fileInput = document.getElementById("photoInput")
-
-    if (!fileInput.files.length) return
-
-    const formData = new FormData()
-
-    formData.append("photo", fileInput.files[0])
-
-    try {
-
-      await fetch("/upload-gallery", {
-        method: "POST",
-        body: formData
-      })
-
-      location.reload()
-
-    } catch (err) {
-
-      alert("Upload failed")
-
-    }
-
-  })
-
+    enableGalleryLightbox();
+    enableSwipeGallery();
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /* =========================
-   GALLERY LIGHTBOX
+   LIGHTBOX
 ========================= */
-
 function enableGalleryLightbox() {
+  const gallery = document.getElementById("photoGallery");
+  if (!gallery) return;
 
-  const gallery = document.getElementById("photoGallery")
-
-  const lightbox = document.getElementById("lightbox")
-
-  const lightboxImg = document.getElementById("lightbox-img")
-
-  if (!gallery || !lightbox) return
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
 
   gallery.querySelectorAll("img").forEach(img => {
-
     img.addEventListener("click", () => {
-
-      lightbox.style.display = "flex"
-
-      lightboxImg.src = img.src
-
-    })
-
-  })
+      lightbox.style.display = "flex";
+      lightboxImg.src = img.src;
+    });
+  });
 
   lightbox.addEventListener("click", () => {
-
-    lightbox.style.display = "none"
-
-  })
-
+    lightbox.style.display = "none";
+  });
 }
 
 /* =========================
-   MOBILE SWIPE GALLERY
+   SWIPE GALLERY
 ========================= */
-
 function enableSwipeGallery() {
+  const gallery = document.getElementById("photoGallery");
+  if (!gallery) return;
 
-  const gallery = document.getElementById("photoGallery")
-
-  if (!gallery) return
-
-  let isDown = false
-  let startX
-  let scrollLeft
-
-  /* Desktop drag */
+  let isDown = false,
+    startX,
+    scrollLeft;
 
   gallery.addEventListener("mousedown", e => {
-
-    isDown = true
-
-    startX = e.pageX - gallery.offsetLeft
-
-    scrollLeft = gallery.scrollLeft
-
-  })
-
-  gallery.addEventListener("mouseleave", () => {
-
-    isDown = false
-
-  })
-
-  gallery.addEventListener("mouseup", () => {
-
-    isDown = false
-
-  })
-
+    isDown = true;
+    startX = e.pageX - gallery.offsetLeft;
+    scrollLeft = gallery.scrollLeft;
+  });
+  gallery.addEventListener("mouseleave", () => (isDown = false));
+  gallery.addEventListener("mouseup", () => (isDown = false));
   gallery.addEventListener("mousemove", e => {
-
-    if (!isDown) return
-
-    e.preventDefault()
-
-    const x = e.pageX - gallery.offsetLeft
-
-    const walk = (x - startX) * 2
-
-    gallery.scrollLeft = scrollLeft - walk
-
-  })
-
-  /* Mobile swipe */
-
-  gallery.addEventListener("touchstart", e => {
-
-    startX = e.touches[0].pageX
-
-    scrollLeft = gallery.scrollLeft
-
-  })
-
-  gallery.addEventListener("touchmove", e => {
-
-    const x = e.touches[0].pageX
-
-    const walk = (x - startX) * 2
-
-    gallery.scrollLeft = scrollLeft - walk
-
-  })
-
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - gallery.offsetLeft;
+    const walk = (x - startX) * 2;
+    gallery.scrollLeft = scrollLeft - walk;
+  });
 }
 
 /* =========================
    PAGE LOAD
 ========================= */
-
 document.addEventListener("DOMContentLoaded", () => {
-
-  loadAffirmation()
-
-  loadSongOfDay()
-
-  loadSongs()
-
-  loadDateIdeas()
-
-  enableGalleryLightbox()
-
-  enableSwipeGallery()
-
-})
+  loadAffirmation();
+  loadSongs();
+  loadDateIdeas();
+  loadGallery();
+});
