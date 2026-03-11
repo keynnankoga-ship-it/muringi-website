@@ -2,23 +2,53 @@
 <html>
 
 <head>
-  <title>Private Love Gallery</title>
-  <link rel="stylesheet" href="style.css">
+
+<title>Gallery</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
-  <h1>Our Private Love Gallery</h1>
 
-  <h2>Upload a Photo</h2>
-  <form id="uploadForm">
-    <input type="file" id="photoInput" accept="image/*" required>
-    <button type="submit">Upload</button>
-  </form>
+<nav>
 
-  <h2>Gallery</h2>
-  <div id="photoGallery" class="gallery"></div>
+<div class="logo">Gallery</div>
 
-  <script src="script.js"></script>
+<a href="/">Back</a>
+
+</nav>
+
+<h2>Our Memories</h2>
+
+<div class="gallery" id="galleryContainer"></div>
+
+<script>
+
+async function loadGallery(){
+
+const res = await fetch("/galleryPhotos")
+
+const photos = await res.json()
+
+const container = document.getElementById("galleryContainer")
+
+photos.forEach(photo=>{
+
+const img=document.createElement("img")
+
+img.src=photo.url
+
+container.appendChild(img)
+
+})
+
+}
+
+loadGallery()
+
+</script>
+
 </body>
 
 </html>

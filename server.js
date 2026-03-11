@@ -1,358 +1,228 @@
-require("dotenv").config();
+require("dotenv").config()
 
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const cloudinary = require("cloudinary").v2;
-const path = require("path");
+const express = require("express")
+const mongoose = require("mongoose")
+const cors = require("cors")
+const multer = require("multer")
+const { CloudinaryStorage } = require("multer-storage-cloudinary")
+const cloudinary = require("cloudinary").v2
+const path = require("path")
 
-const app = express();
+const app = express()
 
-/* ---------------------------
+/* =========================
    Middleware
---------------------------- */
+========================= */
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/music", express.static(path.join(__dirname, "music")));
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.static("public"))
 
-/* ---------------------------
+/* =========================
    MongoDB Connection
---------------------------- */
+========================= */
 
 mongoose.connect(process.env.MONGO_URI)
-.then(()=>console.log("MongoDB connected ✅"))
-.catch(err=>console.error("MongoDB connection error ❌:",err));
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log(err))
 
-/* ---------------------------
-   Models
---------------------------- */
-
-const dateIdeaSchema = new mongoose.Schema({
-  title:String,
-  description:String,
-  photos:[String]
-});
-
-const songSchema = new mongoose.Schema({
-  title:String,
-  artist:String,
-  reason:String,
-  cover:String,
-  file:String
-});
-
-const galleryPhotoSchema = new mongoose.Schema({
-  url:String,
-  uploadedAt:Date
-});
-
-const DateIdea = mongoose.model("DateIdea",dateIdeaSchema);
-const Song = mongoose.model("Song",songSchema);
-const GalleryPhoto = mongoose.model("GalleryPhoto",galleryPhotoSchema);
-
-/* ---------------------------
+/* =========================
    Cloudinary Config
---------------------------- */
+========================= */
 
 cloudinary.config({
-  cloud_name:process.env.CLOUD_NAME,
-  api_key:process.env.CLOUD_API_KEY,
-  api_secret:process.env.CLOUD_API_SECRET
-});
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET
+})
 
-/* ---------------------------
-   Multer Storage
---------------------------- */
-
-const storageDatePhotos = new CloudinaryStorage({
-  cloudinary,
-  params:{
-    folder:"muringi-date-photos",
-    allowed_formats:["jpg","jpeg","png"]
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "muringi-gallery",
+    allowed_formats: ["jpg", "png", "jpeg"]
   }
-});
+})
 
-const storageGallery = new CloudinaryStorage({
-  cloudinary,
-  params:{
-    folder:"private-gallery",
-    allowed_formats:["jpg","jpeg","png"]
-  }
-});
+const upload = multer({ storage })
 
-const storageSongs = new CloudinaryStorage({
-  cloudinary,
-  params:{
-    folder:"songs",
-    allowed_formats:["mp3","m4a","jpeg","png"]
-  }
-});
+/* =========================
+   Models
+========================= */
 
-const uploadDatePhoto = multer({storage:storageDatePhotos});
-const uploadGallery = multer({storage:storageGallery});
-const uploadSong = multer({storage:storageSongs});
+const Affirmation = mongoose.model("Affirmation", new mongoose.Schema({
 
-/* ---------------------------
-   Admin Login
---------------------------- */
+  text: String
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+}))
 
-app.post("/admin-login",(req,res)=>{
+const Song = mongoose.model("Song", new mongoose.Schema({
 
-  const {password} = req.body;
+  title: String,
+  artist: String,
+  cover: String,
+  audio: String
 
-  if(password===ADMIN_PASSWORD){
+}))
 
-    res.json({success:true});
+const DateIdea = mongoose.model("DateIdea", new mongoose.Schema({
 
-  }else{
+  title: String,
+  description: String,
+  photos: [String]
 
-    res.status(401).json({
-      success:false,
-      message:"Wrong password"
-    });
+}))
 
-  }
+const Gallery = mongoose.model("Gallery", new mongoose.Schema({
 
-});
+  url: String
 
-/* ---------------------------
-   Date Ideas Routes
---------------------------- */
+}))
 
-app.get("/dateIdeas",async(req,res)=>{
+/* =========================
+   ROUTES
+========================= */
 
-  try{
+/* ---------- Affirmations ---------- */
 
-    const ideas = await DateIdea.find();
+const fs = require("fs")
+const path = require("path")
 
-    res.json(ideas);
+app.get("/affirmations",(req,res)=>{
 
-  }catch(err){
+const filePath = path.join(__dirname,"data","affirmations.json")
 
-    res.status(500).json(err);
+const affirmations = JSON.parse(
+fs.readFileSync(filePath,"utf8")
+)
 
-  }
+res.json(affirmations)
 
-});
+})
 
-/* Add Date Idea */
+/* ---------- Songs ---------- */
 
-app.post("/admin/date",async(req,res)=>{
+app.get("/songs", async (req, res) => {
 
-  try{
+  const songs = await Song.find()
 
-    const idea = new DateIdea(req.body);
+  res.json(songs)
 
-    await idea.save();
+})
 
-    res.json({success:true,idea});
+/* ---------- Date Ideas ---------- */
 
-  }catch(err){
+app.get("/dateIdeas", async (req, res) => {
 
-    res.status(500).json(err);
+  const ideas = await DateIdea.find()
 
-  }
+  res.json(ideas)
 
-});
+})
 
-/* Upload Date Photos */
+/* ---------- Gallery Photos ---------- */
 
-app.post("/uploadDatePhotos/:id",uploadDatePhoto.array("photos"),async(req,res)=>{
+app.get("/galleryPhotos", async (req, res) => {
 
-  try{
+  const photos = await Gallery.find()
 
-    const idea = await DateIdea.findById(req.params.id);
+  res.json(photos)
 
-    if(!idea.photos) idea.photos=[];
+})
 
-    req.files.forEach(file=>{
-      idea.photos.push(file.path);
-    });
+/* =========================
+   USER PHOTO UPLOAD
+========================= */
 
-    await idea.save();
+app.post("/uploadPhoto", upload.single("photo"), async (req, res) => {
 
-    res.json(idea);
+  const photo = new Gallery({
 
-  }catch(err){
+    url: req.file.path
 
-    res.status(500).json(err);
+  })
 
-  }
+  await photo.save()
 
-});
+  res.json({ success: true })
 
-/* Delete Date Idea */
+})
 
-app.delete("/admin/date/:id",async(req,res)=>{
+/* =========================
+   ADMIN ROUTES
+========================= */
 
-  try{
+/* ---------- Add Song ---------- */
 
-    await DateIdea.findByIdAndDelete(req.params.id);
+app.post("/admin/addSong", async (req, res) => {
 
-    res.json({
-      message:"Date Idea deleted successfully"
-    });
+  const song = new Song(req.body)
 
-  }catch(err){
+  await song.save()
 
-    res.status(500).json({
-      error:"Failed to delete date idea"
-    });
+  res.json({ success: true })
 
-  }
+})
 
-});
+/* ---------- Delete Song ---------- */
 
-/* ---------------------------
-   Songs Routes
---------------------------- */
+app.delete("/admin/deleteSong/:id", async (req, res) => {
 
-app.get("/songs",async(req,res)=>{
+  await Song.findByIdAndDelete(req.params.id)
 
-  try{
+  res.json({ success: true })
 
-    const songs = await Song.find();
+})
 
-    res.json(songs);
+/* ---------- Add Date Idea ---------- */
 
-  }catch(err){
+app.post("/admin/addDateIdea", upload.array("photos"), async (req, res) => {
 
-    res.status(500).json(err);
+  const photoUrls = req.files.map(file => file.path)
 
-  }
+  const idea = new DateIdea({
 
-});
+    title: req.body.title,
+    description: req.body.description,
+    photos: photoUrls
 
-/* Add Song */
+  })
 
-app.post("/admin/song",uploadSong.fields([
-{name:"file",maxCount:1},
-{name:"cover",maxCount:1}
-]),async(req,res)=>{
+  await idea.save()
 
-  try{
+  res.json({ success: true })
 
-    const song = new Song({
-      title:req.body.title,
-      artist:req.body.artist,
-      reason:req.body.reason,
-      file:req.files.file[0].path,
-      cover:req.files.cover[0].path
-    });
+})
 
-    await song.save();
+/* ---------- Delete Date Idea ---------- */
 
-    res.json({success:true,song});
+app.delete("/admin/deleteDateIdea/:id", async (req, res) => {
 
-  }catch(err){
+  await DateIdea.findByIdAndDelete(req.params.id)
 
-    res.status(500).json(err);
+  res.json({ success: true })
 
-  }
+})
 
-});
+/* ---------- Delete Gallery Photo ---------- */
 
-/* Delete Song */
+app.delete("/admin/deletePhoto/:id", async (req, res) => {
 
-app.delete("/admin/song/:id",async(req,res)=>{
+  await Gallery.findByIdAndDelete(req.params.id)
 
-  try{
+  res.json({ success: true })
 
-    await Song.findByIdAndDelete(req.params.id);
+})
 
-    res.json({
-      message:"Song deleted successfully"
-    });
-
-  }catch(err){
-
-    res.status(500).json({
-      error:"Failed to delete song"
-    });
-
-  }
-
-});
-
-/* ---------------------------
-   Private Gallery Routes
---------------------------- */
-
-app.get("/gallery",async(req,res)=>{
-
-  try{
-
-    const photos = await GalleryPhoto.find().sort({uploadedAt:-1});
-
-    res.json(photos);
-
-  }catch(err){
-
-    res.status(500).json(err);
-
-  }
-
-});
-
-/* Upload Gallery Photo */
-
-app.post("/admin/gallery",uploadGallery.single("gallery"),async(req,res)=>{
-
-  try{
-
-    const photo = new GalleryPhoto({
-      url:req.file.path,
-      uploadedAt:new Date()
-    });
-
-    await photo.save();
-
-    res.json({success:true,photo});
-
-  }catch(err){
-
-    res.status(500).json(err);
-
-  }
-
-});
-
-/* Delete Gallery Photo */
-
-app.delete("/admin/gallery/:id",async(req,res)=>{
-
-  try{
-
-    await GalleryPhoto.findByIdAndDelete(req.params.id);
-
-    res.json({
-      message:"Gallery photo deleted successfully"
-    });
-
-  }catch(err){
-
-    res.status(500).json({
-      error:"Failed to delete gallery photo"
-    });
-
-  }
-
-});
-
-/* ---------------------------
+/* =========================
    Start Server
---------------------------- */
+========================= */
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000
 
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
 
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on port", PORT)
 
-});
+})

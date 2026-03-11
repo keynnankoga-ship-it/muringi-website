@@ -1,141 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel - Muringi</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* =========================
-   Reset and Base Styles
-========================= */
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
-body { background:#E5E5E5; color:#000; line-height:1.5; }
 
-/* =========================
-   Admin Layout
-========================= */
-#adminLoginForm { max-width:400px; margin:5rem auto; padding:2rem; background:#F5F0E1; border-radius:15px; box-shadow:0 6px 12px rgba(0,0,0,0.1); text-align:center; }
-#adminLoginForm input { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
-#adminLoginForm button { padding:10px 20px; border:none; border-radius:5px; background:#A89F91; color:#fff; cursor:pointer; transition:0.3s; }
-#adminLoginForm button:hover { background:#8a8378; }
+<title>Admin Dashboard</title>
 
-/* =========================
-   Admin Container
-========================= */
-#adminContent { display:none; padding:2rem; max-width:1200px; margin:0 auto; }
+<link rel="stylesheet" href="style.css">
 
-/* ----------------------------
-   Sections
----------------------------- */
-.admin-section { margin-bottom:4rem; }
-.admin-section h2 { font-size:1.8rem; margin-bottom:1rem; text-align:center; }
-.admin-section form { background:#F5F0E1; padding:1rem; border-radius:15px; margin-bottom:2rem; box-shadow:0 6px 12px rgba(0,0,0,0.1); display:flex; flex-direction:column; gap:0.8rem; }
-.admin-section form input, .admin-section form textarea { padding:8px; border-radius:5px; border:1px solid #ccc; }
-.admin-section form button { width:fit-content; padding:8px 15px; border:none; border-radius:5px; background:#A89F91; color:#fff; cursor:pointer; transition:0.3s; }
-.admin-section form button:hover { background:#8a8378; }
-
-/* ----------------------------
-   Cards
----------------------------- */
-.admin-cards { display:flex; flex-wrap:wrap; gap:1rem; justify-content:center; }
-.date-card, .song { background:#F5F0E1; padding:1rem; border-radius:15px; box-shadow:0 6px 12px rgba(0,0,0,0.1); width:250px; transition:0.3s; }
-.date-card:hover, .song:hover { transform:translateY(-5px); }
-.date-card img, .song img { width:100%; border-radius:10px; margin-top:0.5rem; }
-.song audio { width:100%; margin-top:0.5rem; }
-.delete-btn { background:red; color:#fff; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; margin-top:5px; transition:0.3s; }
-.delete-btn:hover { opacity:0.8; }
-
-/* ----------------------------
-   Date Photos Grid
----------------------------- */
-.date-photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:5px; margin-top:0.5rem; }
-.date-photos img { width:100%; height:70px; object-fit:cover; border-radius:8px; cursor:pointer; transition:transform 0.2s; }
-.date-photos img:hover { transform:scale(1.1); }
-
-/* ----------------------------
-   Gallery Grid
----------------------------- */
-#adminGallery { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
-#adminGallery div { position:relative; display:inline-block; }
-#adminGallery img { width:100px; border-radius:5px; }
-
-/* =========================
-   Responsive
-========================= */
-@media(max-width:768px){
-  .admin-cards { flex-direction:column; align-items:center; }
-  .date-card, .song { width:90%; }
-  form { width:90%; margin:0 auto; }
-}
-</style>
 </head>
+
 <body>
 
-<!-- =========================
-     Admin Login Form
-========================= -->
+<nav>
+
+<div class="logo">Admin Dashboard</div>
+
+</nav>
+
+<!-- ADMIN LOGIN -->
+
+<div id="adminLogin">
+
+<h2>Admin Login</h2>
+
 <form id="adminLoginForm">
-  <h2>Admin Login</h2>
-  <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
-  <button type="submit">Login</button>
+
+<input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+
+<button type="submit">Login</button>
+
 </form>
 
-<!-- =========================
-     Admin Content
-========================= -->
+</div>
+
+<!-- ADMIN CONTENT -->
+
 <div id="adminContent">
 
-  <!-- -------------------------
-       Date Ideas Section
-  ------------------------- -->
-  <section class="admin-section" id="dateSection">
-    <h2>Date Ideas</h2>
+<!-- SONG MANAGEMENT -->
 
-    <form id="addDateForm" enctype="multipart/form-data">
-      <input type="text" name="title" placeholder="Title" required>
-      <textarea name="description" placeholder="Description"></textarea>
-      <input type="file" name="photos" multiple>
-      <button type="submit">Add Date Idea</button>
-    </form>
+<div class="admin-section">
 
-    <div class="admin-cards" id="adminDateIdeas"></div>
-  </section>
+<h2>Add Song</h2>
 
-  <!-- -------------------------
-       Songs Section
-  ------------------------- -->
-  <section class="admin-section" id="songsSection">
-    <h2>Songs</h2>
+<form id="songForm">
 
-    <form id="addSongForm" enctype="multipart/form-data">
-      <input type="text" name="title" placeholder="Song Title" required>
-      <input type="text" name="artist" placeholder="Artist" required>
-      <input type="text" name="reason" placeholder="Reason">
-      <input type="file" name="songFile" required>
-      <input type="file" name="songCover" required>
-      <button type="submit">Add Song</button>
-    </form>
+<input type="text" name="title" placeholder="Song Title" required>
 
-    <div class="admin-cards" id="adminSongs"></div>
-  </section>
+<input type="text" name="artist" placeholder="Artist" required>
 
-  <!-- -------------------------
-       Private Gallery Section
-  ------------------------- -->
-  <section class="admin-section" id="gallerySection">
-    <h2>Private Gallery</h2>
+<input type="text" name="cover" placeholder="Cover Image URL" required>
 
-    <form id="addGalleryForm" enctype="multipart/form-data">
-      <input type="file" name="gallery" required>
-      <button type="submit">Add Photo</button>
-    </form>
+<input type="text" name="audio" placeholder="Audio File URL" required>
 
-    <div id="adminGallery"></div>
-  </section>
+<button type="submit">Add Song</button>
+
+</form>
+
+<div class="admin-horizontal-container" id="adminSongs"></div>
+
+</div>
+
+<!-- DATE IDEAS -->
+
+<div class="admin-section">
+
+<h2>Add Date Idea</h2>
+
+<form id="dateForm" enctype="multipart/form-data">
+
+<input type="text" name="title" placeholder="Date Title" required>
+
+<textarea name="description" placeholder="Description" required></textarea>
+
+<input type="file" name="photos" multiple>
+
+<button type="submit">Add Date Idea</button>
+
+</form>
+
+<div class="admin-horizontal-container" id="adminDates"></div>
+
+</div>
+
+<!-- GALLERY MANAGEMENT -->
+
+<div class="admin-section">
+
+<h2>Gallery Photos</h2>
+
+<div class="admin-horizontal-container" id="adminGallery"></div>
+
+</div>
 
 </div>
 
 <script src="admin.js"></script>
+
 </body>
+
 </html>
