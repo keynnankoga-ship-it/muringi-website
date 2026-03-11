@@ -2,146 +2,66 @@
 <html lang="en">
 
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Muringi Admin Dashboard</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- =========================
-NAVBAR
-========================= -->
+  <nav>
+    <div class="logo">Admin Dashboard</div>
+  </nav>
 
-<nav>
+  <!-- ADMIN LOGIN -->
+  <div id="adminLogin">
+    <h2>Admin Login</h2>
+    <form id="adminLoginForm">
+      <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+      <button type="submit">Login</button>
+    </form>
+  </div>
 
-<div class="logo">Muringi Admin</div>
+  <!-- ADMIN CONTENT -->
+  <div id="adminContent" style="display:none;">
 
-<div>
-<button id="logoutBtn" style="display:none;">Logout</button>
-</div>
+    <!-- SONG MANAGEMENT -->
+    <div class="admin-section">
+      <h2>Add Song</h2>
+      <form id="songForm">
+        <input type="text" name="title" placeholder="Song Title" required>
+        <input type="text" name="artist" placeholder="Artist" required>
+        <input type="text" name="cover" placeholder="Cover Image URL" required>
+        <input type="text" name="audio" placeholder="Audio File URL" required>
+        <button type="submit">Add Song</button>
+      </form>
+      <h3>Existing Songs</h3>
+      <div class="admin-horizontal-container" id="adminSongs"></div>
+    </div>
 
-</nav>
+    <!-- DATE IDEAS -->
+    <div class="admin-section">
+      <h2>Add Date Idea</h2>
+      <form id="dateForm" enctype="multipart/form-data">
+        <input type="text" name="title" placeholder="Date Title" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <input type="file" name="photos" multiple>
+        <button type="submit">Add Date Idea</button>
+      </form>
+      <h3>Existing Date Ideas</h3>
+      <div class="admin-horizontal-container" id="adminDateIdeas"></div>
+    </div>
 
+    <!-- GALLERY MANAGEMENT -->
+    <div class="admin-section">
+      <h2>Gallery Photos</h2>
+      <div class="admin-horizontal-container" id="adminGallery"></div>
+    </div>
 
-<!-- =========================
-ADMIN LOGIN
-========================= -->
+  </div>
 
-<div id="adminLogin" class="admin-login">
-
-<h2>Admin Login</h2>
-
-<form id="adminLoginForm" autocomplete="off">
-
-<input 
-type="password" 
-id="adminPassword" 
-placeholder="Enter Admin Password" 
-required
->
-
-<button type="submit">Login</button>
-
-</form>
-
-</div>
-
-
-<!-- =========================
-ADMIN DASHBOARD
-========================= -->
-
-<div id="adminContent">
-
-
-<!-- =========================
-SONG MANAGEMENT
-========================= -->
-
-<section class="admin-section">
-
-<h2>Add Song</h2>
-
-<form id="songForm">
-
-<input type="text" name="title" placeholder="Song Title" required>
-
-<input type="text" name="artist" placeholder="Artist" required>
-
-<input type="text" name="cover" placeholder="Cover Image URL" required>
-
-<input type="text" name="audio" placeholder="Audio File URL" required>
-
-<button type="submit">Add Song</button>
-
-</form>
-
-<h3>Existing Songs</h3>
-
-<div class="admin-horizontal-container" id="adminSongs"></div>
-
-</section>
-
-
-
-<!-- =========================
-DATE IDEAS
-========================= -->
-
-<section class="admin-section">
-
-<h2>Add Date Idea</h2>
-
-<form id="dateForm" enctype="multipart/form-data">
-
-<input type="text" name="title" placeholder="Date Title" required>
-
-<textarea name="description" placeholder="Description" required></textarea>
-
-<input type="file" name="photos" multiple>
-
-<button type="submit">Add Date Idea</button>
-
-</form>
-
-<h3>Existing Date Ideas</h3>
-
-<div class="admin-horizontal-container" id="adminDateIdeas"></div>
-
-</section>
-
-
-
-<!-- =========================
-GALLERY MANAGEMENT
-========================= -->
-
-<section class="admin-section">
-
-<h2>Gallery Photos</h2>
-
-<p>Uploaded photos from users</p>
-
-<div class="admin-horizontal-container" id="adminGallery"></div>
-
-</section>
-
-
-</div>
-
-
-<!-- =========================
-ADMIN SCRIPT
-========================= -->
-
-<script src="admin.js"></script>
-
+  <script src="admin.js"></script>
 </body>
 
 </html>
