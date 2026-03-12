@@ -1,362 +1,344 @@
 /* =========================
 RESET
 ========================= */
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-font-family:'Poppins',sans-serif;
-background:#E5E5E5;
-color:#000;
-line-height:1.6;
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #E5E5E5;
+  color: #000;
+  line-height: 1.6;
 }
 
 /* =========================
 NAVBAR
 ========================= */
-
-nav{
-position:sticky;
-top:0;
-background:#F5F0E1;
-display:flex;
-justify-content:space-between;
-padding:1rem 2rem;
-align-items:center;
-z-index:100;
-box-shadow:0 4px 6px rgba(0,0,0,0.1);
-flex-wrap:wrap;
+nav {
+  position: sticky;
+  top: 0;
+  background: #F5F0E1;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  align-items: center;
+  z-index: 100;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  flex-wrap: wrap;
 }
 
-nav .logo{
-font-weight:bold;
-font-size:1.5rem;
+nav .logo {
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
-nav a{
-text-decoration:none;
-margin-left:1.5rem;
-color:black;
-font-weight:500;
+nav a {
+  text-decoration: none;
+  margin-left: 1.5rem;
+  color: black;
+  font-weight: 500;
 }
 
 /* =========================
 HERO
 ========================= */
-
-.hero{
-display:flex;
-align-items:center;
-justify-content:center;
-padding:4rem 2rem;
-gap:2rem;
-flex-wrap:wrap;
-text-align:center;
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  text-align: center;
 }
 
-.hero img{
-width:250px;
-max-width:100%;
-border-radius:20px;
+.hero img {
+  width: 250px;
+  max-width: 100%;
+  border-radius: 20px;
 }
 
 /* =========================
 SECTION TITLES
 ========================= */
-
-section h2{
-text-align:center;
-margin-bottom:2rem;
-font-size:1.8rem;
+section h2 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
 }
 
 /* =========================
 HOME
 ========================= */
-
-.home{
-max-width:900px;
-margin:auto;
-background:#F5F0E1;
-padding:2rem;
-border-radius:20px;
-box-shadow:0 8px 15px rgba(0,0,0,0.1);
+.home {
+  max-width: 900px;
+  margin: auto;
+  background: #F5F0E1;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* =========================
-AFFIRMATION
+DAILY AFFIRMATION
 ========================= */
-
-#daily-affirmation{
-background:#E5E5E5;
-padding:1.5rem;
-margin-top:2rem;
-border-radius:15px;
-text-align:center;
-font-size:1.1rem;
+#daily-affirmation, .daily-affirmation {
+  background: #E5E5E5;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 1.1rem;
 }
 
 /* =========================
 GALLERY
 ========================= */
-
-.gallery{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-gap:1rem;
-padding:2rem;
+.gallery, #photoGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  padding: 2rem;
 }
 
-.gallery img{
-width:100%;
-height:200px;
-object-fit:cover;
-border-radius:15px;
-cursor:pointer;
-transition:transform .3s;
+.gallery img, #photoGallery img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: transform .3s;
 }
 
-.gallery img:hover{
-transform:scale(1.05);
+.gallery img:hover, #photoGallery img:hover {
+  transform: scale(1.05);
 }
 
 /* =========================
 LIGHTBOX
 ========================= */
-
-.lightbox{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.9);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:9999;
-padding:20px;
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
 }
 
-.lightbox img{
-max-width:90%;
-max-height:90%;
-border-radius:15px;
+.lightbox img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 15px;
 }
 
 /* =========================
 DATE IDEAS
 ========================= */
-
-#dateIdeas{
-display:flex;
-flex-wrap:wrap;
-gap:1.5rem;
-justify-content:center;
-padding:2rem;
+#dateIdeas, #dateIdeasAdmin {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 2rem;
 }
 
-.date-card{
-background:#F5F0E1;
-padding:1rem;
-border-radius:15px;
-width:250px;
-box-shadow:0 6px 12px rgba(0,0,0,0.1);
-overflow:hidden;
+.date-card {
+  background: #F5F0E1;
+  padding: 1rem;
+  border-radius: 15px;
+  width: 250px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.date-card h3{
-margin-bottom:8px;
+.date-card h3 {
+  margin-bottom: 8px;
 }
 
-.date-photos{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(70px,1fr));
-gap:5px;
-margin-top:.5rem;
+.date-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 5px;
+  margin-top: .5rem;
 }
 
-.date-photos img{
-height:70px;
-width:100%;
-object-fit:cover;
-border-radius:8px;
+.date-photos img {
+  height: 70px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 /* =========================
 MUSIC
 ========================= */
-
-#playlist{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-gap:1.5rem;
-padding:2rem;
+#playlist, #songs, #dailySong {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
 }
 
-.song{
-background:#E5E5E5;
-padding:1rem;
-border-radius:15px;
-text-align:center;
-box-shadow:0 6px 12px rgba(0,0,0,0.1);
-display:flex;
-flex-direction:column;
-align-items:center;
+.song {
+  background: #E5E5E5;
+  padding: 1rem;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.song img{
-width:100%;
-max-width:180px;
-border-radius:10px;
-margin-bottom:10px;
+.song img {
+  width: 180px;
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
-/* FIX AUDIO OVERLAP */
-
-.song audio{
-width:100%;
-margin-top:10px;
-position:relative;
-z-index:1;
+.song audio {
+  width: 180px;
+  margin-top: 10px;
 }
 
 /* =========================
 SPOTIFY
 ========================= */
+.spotify-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
 
-.spotify-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
-gap:1.5rem;
-padding:2rem;
+.spotify-grid iframe {
+  width: 100%;
+  height: 380px;
+  border-radius: 15px;
+  border: none;
 }
 
 /* =========================
-ADMIN
+ADMIN DASHBOARD HORIZONTAL LAYOUT
 ========================= */
-
-#adminContent{
-display:none;
-margin:2rem;
+#songs, #galleryAdmin, #dateIdeasAdmin, #playlistsAdmin {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scroll-behavior: smooth;
 }
 
-/* HORIZONTAL SCROLL SECTIONS */
-
-.admin-horizontal-container{
-display:flex;
-gap:20px;
-overflow-x:auto;
-padding:10px;
-scroll-behavior:smooth;
+.song-item, .gallery-item, .item {
+  background: #F5F0E1;
+  border-radius: 15px;
+  padding: 1rem;
+  flex: 0 0 auto;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* MATCH UI CARD STYLE */
-
-.item,
-.song-item,
-.gallery-item,
-.card{
-background:#F5F0E1;
-padding:1rem;
-border-radius:15px;
-min-width:200px;
-text-align:center;
-box-shadow:0 6px 12px rgba(0,0,0,0.1);
-flex-shrink:0;
+.song-item img, .gallery-item img, .item img {
+  width: 180px;
+  height: auto;
+  border-radius: 10px;
 }
 
-.gallery-item img{
-width:100%;
-border-radius:10px;
+.song-item audio, .item audio {
+  width: 180px;
+  margin-top: 8px;
 }
 
-/* DELETE BUTTON */
-
-.delete-btn{
-background:red;
-color:white;
-border:none;
-padding:6px 10px;
-border-radius:5px;
-margin-top:8px;
-cursor:pointer;
-font-size:0.9rem;
+.delete-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 8px;
 }
 
-/* ADD CARD (ADMIN INPUTS) */
-
-.add-card input{
-display:block;
-width:100%;
-margin-bottom:8px;
-padding:6px;
-border-radius:6px;
-border:1px solid #ccc;
+#songs::-webkit-scrollbar,
+#galleryAdmin::-webkit-scrollbar,
+#dateIdeasAdmin::-webkit-scrollbar,
+#playlistsAdmin::-webkit-scrollbar {
+  height: 8px;
 }
 
-.add-card button{
-background:black;
-color:white;
-border:none;
-padding:8px 12px;
-border-radius:6px;
-cursor:pointer;
+#songs::-webkit-scrollbar-thumb,
+#galleryAdmin::-webkit-scrollbar-thumb,
+#dateIdeasAdmin::-webkit-scrollbar-thumb,
+#playlistsAdmin::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
 }
 
 /* =========================
 FOOTER
 ========================= */
-
-footer{
-background:#D3D3D3;
-padding:1.5rem;
-text-align:center;
-margin-top:2rem;
-font-size:0.9rem;
+footer {
+  background: #D3D3D3;
+  padding: 1.5rem;
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
 }
 
 /* =========================
 MOBILE
 ========================= */
+@media(max-width:768px) {
 
-@media(max-width:768px){
+  .hero {
+    flex-direction: column;
+    padding: 2rem 1rem;
+  }
 
-.hero{
-flex-direction:column;
-padding:2rem 1rem;
-}
+  .hero img {
+    width: 200px;
+  }
 
-.hero img{
-width:200px;
-}
+  .gallery, #photoGallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-.gallery{
-grid-template-columns:repeat(2,1fr);
-}
+  #playlist, #songs, #dailySong {
+    grid-template-columns: repeat(2, 1fr);
+  }
 
-#playlist{
-grid-template-columns:repeat(2,1fr);
-}
+  .date-card {
+    width: 90%;
+  }
 
-.date-card{
-width:90%;
-}
+  .spotify-grid {
+    grid-template-columns: 1fr;
+  }
 
-.spotify-grid{
-grid-template-columns:1fr;
-}
+  nav {
+    justify-content: center;
+  }
 
-nav{
-justify-content:center;
-}
+  nav a {
+    margin: 0 10px;
+  }
 
-nav a{
-margin:0 10px;
-}
-
+  .song-item img,
+  .gallery-item img,
+  .item img,
+  .song-item audio,
+  .item audio {
+    width: 140px;
+  }
 }

@@ -1,78 +1,197 @@
-async function loadSongs(){
+/* =========================
+   DAILY AFFIRMATION
+========================= */
+async function loadAffirmation() {
+  const container = document.getElementById("affirmation-text");
+  if (!container) return;
 
-const res = await fetch("/songs")
-const songs = await res.json()
-
-const playlist = document.getElementById("playlist")
-
-playlist.innerHTML=""
-
-songs.forEach(song=>{
-
-const div=document.createElement("div")
-
-div.innerHTML=`
-
-<img src="${song.cover}" width="200">
-<h3>${song.title}</h3>
-<p>${song.artist}</p>
-
-<audio controls>
-<source src="${song.audio}" type="audio/mpeg">
-</audio>
-
-`
-
-playlist.appendChild(div)
-
-})
-
+  try {
+    const res = await fetch("/affirmations");
+    const affirmations = await res.json();
+    if (!affirmations || affirmations.length === 0) {
+      container.innerText = "You are amazing and today will be a good day ❤️";
+      return;
+    }
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    const index = dayOfYear % affirmations.length;
+    container.innerText = affirmations[index].text;
+  } catch {
+    container.innerText = "You are amazing and today will be a good day ❤️";
+  }
 }
 
-async function loadGallery(){
+/* =========================
+   SONGS (Playlist + Song of the Day)
+========================= */
+async function loadSongs() {
+  const container = document.getElementById("playlist");
+  if (!container) return;
 
-const res = await fetch("/gallery")
-const photos = await res.json()
+  try {
+    const res = await fetch("/songs");
+    const songs = await res.json();
+    container.innerHTML = "";
 
-const gallery=document.getElementById("photoGallery")
+    songs.forEach(song => {
+      // ensure proper paths
+      const cover = song.cover?.startsWith("/") ? song.cover : "/music/" + song.cover;
+      const audioPath = song.file || song.audio || song.title + ".mp3";
+      const audio = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
 
-gallery.innerHTML=""
+      const div = document.createElement("div");
+      div.className = "song";
 
-photos.forEach(photo=>{
+      div.innerHTML = `
+        <img src="${cover}" width="180">
+        <h3>${song.title}</h3>
+        <p>${song.artist}</p>
+        <audio controls style="width:180px;">
+          <source src="${audio}" type="audio/mpeg">
+        </audio>
+      `;
+      container.appendChild(div);
+    });
 
-const img=document.createElement("img")
-img.src=photo.url
+    enableAudioControl();
 
-gallery.appendChild(img)
+    // Song of the Day
+    const dayRes = await fetch("/song-of-the-day");
+    const daySong = await dayRes.json();
+    const dailyContainer = document.getElementById("dailySong");
 
-})
+    if (daySong && dailyContainer) {
+      const cover = daySong.cover?.startsWith("/") ? daySong.cover : "/music/" + daySong.cover;
+      const audioPath = daySong.file || daySong.audio || daySong.title + ".mp3";
+      const audio = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
 
+      dailyContainer.innerHTML = `
+        <div class="song">
+          <img src="${cover}" width="180">
+          <h3>${daySong.title}</h3>
+          <p>${daySong.artist}</p>
+          <audio controls style="width:180px;">
+            <source src="${audio}" type="audio/mpeg">
+          </audio>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error("Song loading error:", err);
+  }
 }
 
-async function loadPlaylists(){
-
-const res = await fetch("/playlists")
-const playlists = await res.json()
-
-const container=document.getElementById("spotifyPlaylists")
-
-container.innerHTML=""
-
-playlists.forEach(p=>{
-
-const div=document.createElement("div")
-div.innerHTML=p.embed
-
-container.appendChild(div)
-
-})
-
+/* =========================
+   AUTO PAUSE OTHER SONGS
+========================= */
+function enableAudioControl() {
+  const audios = document.querySelectorAll("audio");
+  audios.forEach(audio => {
+    audio.onplay = () => {
+      audios.forEach(other => {
+        if (other !== audio) other.pause();
+      });
+    };
+  });
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
+/* =========================
+   DATE IDEAS
+========================= */
+async function loadDateIdeas() {
+  const container = document.getElementById("dateIdeas");
+  if (!container) return;
 
-loadSongs()
-loadGallery()
-loadPlaylists()
+  try {
+    const res = await fetch("/dateIdeas");
+    const ideas = await res.json();
+    container.innerHTML = "";
 
-})
+    ideas.forEach(idea => {
+      const div = document.createElement("div");
+      div.className = "date-card";
+      let photosHTML = "";
+      if (idea.photos) {
+        idea.photos.forEach(p => {
+          photosHTML += `<img src="${p}">`;
+        });
+      }
+      div.innerHTML = `
+        <h3>${idea.title}</h3>
+        <p>${idea.description}</p>
+        <div class="date-photos">${photosHTML}</div>
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Date ideas error:", err);
+  }
+}
+
+/* =========================
+   GALLERY
+========================= */
+async function loadGallery() {
+  const container = document.getElementById("photoGallery");
+  if (!container) return;
+  container.innerHTML = "";
+
+  try {
+    const res = await fetch("/gallery");
+    const photos = await res.json();
+    photos.forEach(photo => {
+      const img = document.createElement("img");
+      img.src = photo.url;
+      container.appendChild(img);
+    });
+  } catch (err) {
+    console.error("Gallery DB error:", err);
+  }
+
+  // Public gallery fallback
+  const publicPhotos = [];
+  for (let i = 1; i <= 24; i++) {
+    publicPhotos.push(`/gallery/gallery${i}.jpeg`);
+  }
+  publicPhotos.forEach(src => {
+    const img = document.createElement("img");
+    img.src = src;
+    container.appendChild(img);
+  });
+
+  enableGalleryLightbox();
+}
+
+/* =========================
+   LIGHTBOX
+========================= */
+function enableGalleryLightbox() {
+  const gallery = document.getElementById("photoGallery");
+  if (!gallery) return;
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightbox-img");
+
+  gallery.querySelectorAll("img").forEach(img => {
+    img.onclick = () => {
+      lightbox.style.display = "flex";
+      lightboxImg.src = img.src;
+    };
+  });
+
+  lightbox.onclick = () => {
+    lightbox.style.display = "none";
+  };
+}
+
+/* =========================
+   PAGE LOAD
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  loadAffirmation();
+  loadSongs();
+  loadDateIdeas();
+  loadGallery();
+});
