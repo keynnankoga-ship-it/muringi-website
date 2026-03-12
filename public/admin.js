@@ -1,18 +1,24 @@
+/* LOGIN */
+
 async function login(){
 
 const password=document.getElementById("password").value
 
 const res=await fetch("/admin-login",{
-
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({password})
-
 })
 
 if(res.ok){
 
 document.getElementById("panel").style.display="block"
+document.getElementById("login").style.display="none"
+
+loadSongs()
+loadGallery()
+loadDates()
+loadPlaylists()
 
 }else{
 
@@ -21,6 +27,34 @@ alert("Wrong password")
 }
 
 }
+
+
+/* SESSION CHECK */
+
+async function checkLogin(){
+
+const res=await fetch("/admin-check")
+
+const data=await res.json()
+
+if(data.logged){
+
+document.getElementById("panel").style.display="block"
+document.getElementById("login").style.display="none"
+
+loadSongs()
+loadGallery()
+loadDates()
+loadPlaylists()
+
+}
+
+}
+
+checkLogin()
+
+
+/* SONGS */
 
 async function addSong(){
 
@@ -34,16 +68,239 @@ cover:document.getElementById("cover").value
 }
 
 await fetch("/admin/add-song",{
-
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify(song)
-
 })
 
 alert("Song added")
 
+loadSongs()
+
 }
+
+
+async function loadSongs(){
+
+const res=await fetch("/songs")
+const songs=await res.json()
+
+const container=document.getElementById("songs")
+
+container.innerHTML=""
+
+songs.forEach(song=>{
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<img src="${song.cover}" style="width:100%">
+
+<h4>${song.title}</h4>
+
+<p>${song.artist}</p>
+
+<button onclick="deleteSong('${song._id}')">Delete</button>
+
+`
+
+container.appendChild(card)
+
+})
+
+}
+
+
+async function deleteSong(id){
+
+await fetch("/admin/delete-song/"+id,{method:"DELETE"})
+
+loadSongs()
+
+}
+
+
+/* GALLERY */
+
+async function addPhoto(){
+
+const url=document.getElementById("photoUrl").value
+
+await fetch("/admin/add-photo",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({url})
+})
+
+alert("Photo added")
+
+loadGallery()
+
+}
+
+
+async function loadGallery(){
+
+const res=await fetch("/gallery")
+const photos=await res.json()
+
+const container=document.getElementById("galleryAdmin")
+
+container.innerHTML=""
+
+photos.forEach(photo=>{
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<img src="${photo.url}" style="width:100%">
+
+<button onclick="deletePhoto('${photo._id}')">Delete</button>
+
+`
+
+container.appendChild(card)
+
+})
+
+}
+
+
+async function deletePhoto(id){
+
+await fetch("/admin/delete-photo/"+id,{method:"DELETE"})
+
+loadGallery()
+
+}
+
+
+/* DATE IDEAS */
+
+async function addDate(){
+
+const idea={
+
+title:document.getElementById("dateTitle").value,
+description:document.getElementById("dateDesc").value
+
+}
+
+await fetch("/admin/add-date",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(idea)
+})
+
+alert("Date idea added")
+
+loadDates()
+
+}
+
+
+async function loadDates(){
+
+const res=await fetch("/dateIdeas")
+const ideas=await res.json()
+
+const container=document.getElementById("dateIdeasAdmin")
+
+container.innerHTML=""
+
+ideas.forEach(idea=>{
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<h4>${idea.title}</h4>
+
+<p>${idea.description}</p>
+
+<button onclick="deleteDate('${idea._id}')">Delete</button>
+
+`
+
+container.appendChild(card)
+
+})
+
+}
+
+
+async function deleteDate(id){
+
+await fetch("/admin/delete-date/"+id,{method:"DELETE"})
+
+loadDates()
+
+}
+
+
+/* PLAYLISTS */
+
+async function addPlaylist(){
+
+const embed=document.getElementById("playlistEmbed").value
+
+await fetch("/admin/add-playlist",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({embed})
+})
+
+alert("Playlist added")
+
+loadPlaylists()
+
+}
+
+
+async function loadPlaylists(){
+
+const res=await fetch("/playlists")
+const lists=await res.json()
+
+const container=document.getElementById("playlistsAdmin")
+
+container.innerHTML=""
+
+lists.forEach(list=>{
+
+const card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+${list.embed}
+
+<button onclick="deletePlaylist('${list._id}')">Delete</button>
+
+`
+
+container.appendChild(card)
+
+})
+
+}
+
+
+async function deletePlaylist(id){
+
+await fetch("/admin/delete-playlist/"+id,{method:"DELETE"})
+
+loadPlaylists()
+
+}
+
+
+/* SUBSCRIPTIONS */
 
 async function loadSubs(){
 

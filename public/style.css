@@ -216,9 +216,13 @@ border-radius:10px;
 margin-bottom:10px;
 }
 
+/* FIX AUDIO OVERLAP */
+
 .song audio{
 width:100%;
 margin-top:10px;
+position:relative;
+z-index:1;
 }
 
 /* =========================
@@ -241,28 +245,37 @@ display:none;
 margin:2rem;
 }
 
+/* HORIZONTAL SCROLL SECTIONS */
+
 .admin-horizontal-container{
 display:flex;
-gap:15px;
+gap:20px;
 overflow-x:auto;
-padding-bottom:10px;
+padding:10px;
+scroll-behavior:smooth;
 }
+
+/* MATCH UI CARD STYLE */
 
 .item,
 .song-item,
-.gallery-item{
+.gallery-item,
+.card{
 background:#F5F0E1;
 padding:1rem;
 border-radius:15px;
-min-width:150px;
+min-width:200px;
 text-align:center;
-box-shadow:0 4px 8px rgba(0,0,0,0.1);
+box-shadow:0 6px 12px rgba(0,0,0,0.1);
+flex-shrink:0;
 }
 
 .gallery-item img{
 width:100%;
 border-radius:10px;
 }
+
+/* DELETE BUTTON */
 
 .delete-btn{
 background:red;
@@ -273,6 +286,26 @@ border-radius:5px;
 margin-top:8px;
 cursor:pointer;
 font-size:0.9rem;
+}
+
+/* ADD CARD (ADMIN INPUTS) */
+
+.add-card input{
+display:block;
+width:100%;
+margin-bottom:8px;
+padding:6px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.add-card button{
+background:black;
+color:white;
+border:none;
+padding:8px 12px;
+border-radius:6px;
+cursor:pointer;
 }
 
 /* =========================

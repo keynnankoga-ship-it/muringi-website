@@ -2,117 +2,139 @@
    DAILY AFFIRMATION
 ========================= */
 async function loadAffirmation() {
-  const container = document.getElementById("affirmation-text");
 
-  try {
-    const res = await fetch("/affirmations");
-    const affirmations = await res.json();
+const container=document.getElementById("affirmation-text")
+if(!container) return
 
-    if (!affirmations || affirmations.length === 0) {
-      container.innerText = "You are amazing and today will be a good day ❤️";
-      return;
-    }
+try{
 
-    const today = new Date();
-    const start = new Date(today.getFullYear(), 0, 0);
-    const diff = today - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    const dayOfYear = Math.floor(diff / oneDay);
+const res=await fetch("/affirmations")
+const affirmations=await res.json()
 
-    const index = dayOfYear % affirmations.length;
+if(!affirmations || affirmations.length===0){
+container.innerText="You are amazing and today will be a good day ❤️"
+return
+}
 
-    container.innerText = affirmations[index].text;
+const today=new Date()
+const start=new Date(today.getFullYear(),0,0)
+const diff=today-start
+const oneDay=1000*60*60*24
+const dayOfYear=Math.floor(diff/oneDay)
 
-  } catch (err) {
-    container.innerText = "You are amazing and today will be a good day ❤️";
-  }
+const index=dayOfYear % affirmations.length
+
+container.innerText=affirmations[index].text
+
+}catch(err){
+
+container.innerText="You are amazing and today will be a good day ❤️"
+
+}
+
 }
 
 
 /* =========================
-   SONGS (Playlist + Song of the Day)
+   SONGS
 ========================= */
-async function loadSongs() {
+async function loadSongs(){
 
-  const container = document.getElementById("playlist");
-  if (!container) return;
+const container=document.getElementById("playlist")
+if(!container) return
 
-  try {
+try{
 
-    const res = await fetch("/songs");
-    const songs = await res.json();
+const res=await fetch("/songs")
+const songs=await res.json()
 
-    container.innerHTML = "";
+container.innerHTML=""
 
-    songs.forEach(song => {
+songs.forEach(song=>{
 
-      const cover = song.cover.startsWith("/") ? song.cover : "/" + song.cover;
+const cover=song.cover?.startsWith("/")?song.cover:"/"+song.cover
 
-      // support both MongoDB formats
-      const audioPath = song.file || song.audio || "";
-      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
+const audioPath=song.file || song.audio || ""
+const audio=audioPath.startsWith("/")?audioPath:"/"+audioPath
 
-      const div = document.createElement("div");
-      div.className = "song";
+const div=document.createElement("div")
+div.className="song"
 
-      div.innerHTML = `
-        <img src="${cover}" width="200">
-        <h3>${song.title}</h3>
-        <p>${song.artist}</p>
-        <audio controls>
-          <source src="${audio}" type="audio/mpeg">
-        </audio>
-      `;
+div.innerHTML=`
 
-      container.appendChild(div);
+<img src="${cover}" width="200">
 
-    });
+<h3>${song.title}</h3>
 
-    enableAudioControl();
+<p>${song.artist}</p>
+
+<audio controls>
+<source src="${audio}" type="audio/mpeg">
+</audio>
+
+`
+
+container.appendChild(div)
+
+})
+
+enableAudioControl()
 
 
-    /* ---------- Song of the Day ---------- */
+/* SONG OF THE DAY */
 
-    const dayRes = await fetch("/song-of-the-day");
-    const daySong = await dayRes.json();
+const dayRes=await fetch("/song-of-the-day")
+const daySong=await dayRes.json()
 
-    const dailyContainer = document.getElementById("dailySong");
+const dailyContainer=document.getElementById("dailySong")
 
-    if (daySong && dailyContainer) {
+if(daySong && dailyContainer){
 
-      const cover = daySong.cover.startsWith("/") ? daySong.cover : "/" + daySong.cover;
+const cover=daySong.cover?.startsWith("/")?daySong.cover:"/"+daySong.cover
 
-      const audioPath = daySong.file || daySong.audio || "";
-      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
+const audioPath=daySong.file || daySong.audio || ""
+const audio=audioPath.startsWith("/")?audioPath:"/"+audioPath
 
-      dailyContainer.innerHTML = `
-        <div class="song">
-          <img src="${cover}" width="200">
-          <h3>${daySong.title}</h3>
-          <p>${daySong.artist}</p>
-          <audio controls>
-            <source src="${audio}" type="audio/mpeg">
-          </audio>
-        </div>
-      `;
-    }
+dailyContainer.innerHTML=`
 
-  } catch (err) {
-    console.error(err);
-  }
+<div class="song">
+
+<img src="${cover}" width="200">
+
+<h3>${daySong.title}</h3>
+
+<p>${daySong.artist}</p>
+
+<audio controls>
+<source src="${audio}" type="audio/mpeg">
+</audio>
+
+</div>
+
+`
+
+}
+
+}catch(err){
+
+console.error("Song loading error:",err)
+
+}
+
 }
 
 
 /* =========================
    AUTO PAUSE OTHER SONGS
 ========================= */
+
 function enableAudioControl(){
 
 const audios=document.querySelectorAll("audio")
 
 audios.forEach(audio=>{
 
-audio.addEventListener("play",()=>{
+audio.onplay=()=>{
 
 audios.forEach(other=>{
 if(other!==audio){
@@ -120,7 +142,7 @@ other.pause()
 }
 })
 
-})
+}
 
 })
 
@@ -130,116 +152,130 @@ other.pause()
 /* =========================
    DATE IDEAS
 ========================= */
-async function loadDateIdeas() {
 
-  const container = document.getElementById("dateIdeas");
-  if (!container) return;
+async function loadDateIdeas(){
 
-  try {
+const container=document.getElementById("dateIdeas")
+if(!container) return
 
-    const res = await fetch("/dateIdeas");
-    const ideas = await res.json();
+try{
 
-    container.innerHTML = "";
+const res=await fetch("/dateIdeas")
+const ideas=await res.json()
 
-    ideas.forEach(idea => {
+container.innerHTML=""
 
-      const div = document.createElement("div");
-      div.className = "date-card";
+ideas.forEach(idea=>{
 
-      let photosHTML = "";
+const div=document.createElement("div")
+div.className="date-card"
 
-      if (idea.photos) {
-        idea.photos.forEach(p => {
-          photosHTML += `<img src="${p}" />`;
-        });
-      }
+let photosHTML=""
 
-      div.innerHTML = `
-        <h3>${idea.title}</h3>
-        <p>${idea.description}</p>
-        <div class="date-photos">${photosHTML}</div>
-      `;
+if(idea.photos){
 
-      container.appendChild(div);
+idea.photos.forEach(p=>{
+photosHTML+=`<img src="${p}">`
+})
 
-    });
+}
 
-  } catch (err) {
-    console.error(err);
-  }
+div.innerHTML=`
+
+<h3>${idea.title}</h3>
+
+<p>${idea.description}</p>
+
+<div class="date-photos">${photosHTML}</div>
+
+`
+
+container.appendChild(div)
+
+})
+
+}catch(err){
+
+console.error("Date ideas error:",err)
+
+}
+
 }
 
 
 /* =========================
    GALLERY
 ========================= */
-async function loadGallery() {
 
-  const container = document.getElementById("photoGallery");
-  if (!container) return;
+async function loadGallery(){
 
-  container.innerHTML = "";
+const container=document.getElementById("photoGallery")
+if(!container) return
 
-  try {
+container.innerHTML=""
 
-    const res = await fetch("/gallery");
-    const photos = await res.json();
+try{
 
-    photos.forEach(photo => {
+const res=await fetch("/gallery")
+const photos=await res.json()
 
-      const img = document.createElement("img");
-      img.src = photo.url;
+photos.forEach(photo=>{
 
-      container.appendChild(img);
+const img=document.createElement("img")
+img.src=photo.url
 
-    });
+container.appendChild(img)
 
-  } catch (err) {
-    console.error(err);
-  }
+})
+
+}catch(err){
+
+console.error("Gallery DB error:",err)
+
+}
 
 
-  /* Photos from public/gallery */
+/* PUBLIC GALLERY PHOTOS */
 
-  const publicPhotos = [
-    "/gallery1.jpeg",
-    "/gallery2.jpeg",
-    "/gallery3.jpeg"
-     "/gallery4.jpeg",
-    "/gallery5.jpeg",
-    "/gallery6.jpeg"
-    "/gallery7.jpeg",
-    "/gallery8.jpeg",
-    "/gallery9.jpeg"
-   "/gallery10.jpeg",
-    "/gallery11.jpeg",
-    "/gallery12.jpeg"
-    "/gallery13.jpeg",
-    "/gallery14.jpeg",
-    "/gallery15.jpeg"
-    "/gallery16.jpeg",
-    "/gallery17.jpeg",
-    "/gallery18.jpeg"
-    "/gallery19.jpeg",
-    "/gallery20.jpeg",
-    "/gallery21.jpeg"
-   "/gallery22.jpeg",
-    "/gallery23.jpeg",
-    "/gallery24.jpeg"
-  ];
+const publicPhotos=[
 
-  publicPhotos.forEach(src => {
+"/gallery1.jpeg",
+"/gallery2.jpeg",
+"/gallery3.jpeg",
+"/gallery4.jpeg",
+"/gallery5.jpeg",
+"/gallery6.jpeg",
+"/gallery7.jpeg",
+"/gallery8.jpeg",
+"/gallery9.jpeg",
+"/gallery10.jpeg",
+"/gallery11.jpeg",
+"/gallery12.jpeg",
+"/gallery13.jpeg",
+"/gallery14.jpeg",
+"/gallery15.jpeg",
+"/gallery16.jpeg",
+"/gallery17.jpeg",
+"/gallery18.jpeg",
+"/gallery19.jpeg",
+"/gallery20.jpeg",
+"/gallery21.jpeg",
+"/gallery22.jpeg",
+"/gallery23.jpeg",
+"/gallery24.jpeg"
 
-    const img = document.createElement("img");
-    img.src = src;
+]
 
-    container.appendChild(img);
+publicPhotos.forEach(src=>{
 
-  });
+const img=document.createElement("img")
+img.src=src
 
-  enableGalleryLightbox();
-  enableSwipeGallery();
+container.appendChild(img)
+
+})
+
+enableGalleryLightbox()
 
 }
 
@@ -247,69 +283,31 @@ async function loadGallery() {
 /* =========================
    LIGHTBOX
 ========================= */
-function enableGalleryLightbox() {
 
-  const gallery = document.getElementById("photoGallery");
-  if (!gallery) return;
+function enableGalleryLightbox(){
 
-  const lightbox = document.getElementById("lightbox");
-  const lightboxImg = document.getElementById("lightbox-img");
+const gallery=document.getElementById("photoGallery")
+if(!gallery) return
 
-  gallery.querySelectorAll("img").forEach(img => {
+const lightbox=document.getElementById("lightbox")
+const lightboxImg=document.getElementById("lightbox-img")
 
-    img.addEventListener("click", () => {
+gallery.querySelectorAll("img").forEach(img=>{
 
-      lightbox.style.display = "flex";
-      lightboxImg.src = img.src;
+img.onclick=()=>{
 
-    });
-
-  });
-
-  lightbox.addEventListener("click", () => {
-
-    lightbox.style.display = "none";
-
-  });
+lightbox.style.display="flex"
+lightboxImg.src=img.src
 
 }
 
+})
 
-/* =========================
-   SWIPE GALLERY
-========================= */
-function enableSwipeGallery() {
+lightbox.onclick=()=>{
 
-  const gallery = document.getElementById("photoGallery");
-  if (!gallery) return;
+lightbox.style.display="none"
 
-  let isDown = false;
-  let startX;
-  let scrollLeft;
-
-  gallery.addEventListener("mousedown", e => {
-
-    isDown = true;
-    startX = e.pageX - gallery.offsetLeft;
-    scrollLeft = gallery.scrollLeft;
-
-  });
-
-  gallery.addEventListener("mouseleave", () => isDown = false);
-  gallery.addEventListener("mouseup", () => isDown = false);
-
-  gallery.addEventListener("mousemove", e => {
-
-    if (!isDown) return;
-
-    e.preventDefault();
-
-    const x = e.pageX - gallery.offsetLeft;
-    const walk = (x - startX) * 2;
-
-    gallery.scrollLeft = scrollLeft - walk;
-
-  });
+}
 
 }
 
@@ -317,11 +315,12 @@ function enableSwipeGallery() {
 /* =========================
    PAGE LOAD
 ========================= */
-document.addEventListener("DOMContentLoaded", () => {
 
-  loadAffirmation();
-  loadSongs();
-  loadDateIdeas();
-  loadGallery();
+document.addEventListener("DOMContentLoaded",()=>{
 
-});
+loadAffirmation()
+loadSongs()
+loadDateIdeas()
+loadGallery()
+
+})
