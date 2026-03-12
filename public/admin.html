@@ -1,67 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+<h2>Admin Login</h2>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+<input id="password" type="password">
 
-<body>
+<button onclick="login()">Login</button>
 
-  <nav>
-    <div class="logo">Admin Dashboard</div>
-  </nav>
+<div id="panel" style="display:none">
 
-  <!-- ADMIN LOGIN -->
-  <div id="adminLogin">
-    <h2>Admin Login</h2>
-    <form id="adminLoginForm">
-      <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
-      <button type="submit">Login</button>
-    </form>
-  </div>
+<h3>Add Song</h3>
 
-  <!-- ADMIN CONTENT -->
-  <div id="adminContent" style="display:none;">
+<input id="title">
+<input id="artist">
+<input id="audio" placeholder="/music/song.mp3">
+<input id="cover" placeholder="/music/cover.jpeg">
 
-    <!-- SONG MANAGEMENT -->
-    <div class="admin-section">
-      <h2>Add Song</h2>
-      <form id="songForm">
-        <input type="text" name="title" placeholder="Song Title" required>
-        <input type="text" name="artist" placeholder="Artist" required>
-        <input type="text" name="cover" placeholder="Cover Image URL" required>
-        <input type="text" name="audio" placeholder="Audio File URL" required>
-        <button type="submit">Add Song</button>
-      </form>
-      <h3>Existing Songs</h3>
-      <div class="admin-horizontal-container" id="adminSongs"></div>
-    </div>
+<button onclick="addSong()">Add</button>
 
-    <!-- DATE IDEAS -->
-    <div class="admin-section">
-      <h2>Add Date Idea</h2>
-      <form id="dateForm" enctype="multipart/form-data">
-        <input type="text" name="title" placeholder="Date Title" required>
-        <textarea name="description" placeholder="Description" required></textarea>
-        <input type="file" name="photos" multiple>
-        <button type="submit">Add Date Idea</button>
-      </form>
-      <h3>Existing Date Ideas</h3>
-      <div class="admin-horizontal-container" id="adminDateIdeas"></div>
-    </div>
+<h3>Monitor Subscriptions</h3>
 
-    <!-- GALLERY MANAGEMENT -->
-    <div class="admin-section">
-      <h2>Gallery Photos</h2>
-      <div class="admin-horizontal-container" id="adminGallery"></div>
-    </div>
+<button onclick="loadSubs()">View Subscribers</button>
 
-  </div>
+<ul id="subs"></ul>
 
-  <script src="admin.js"></script>
-</body>
+</div>
 
-</html>
+<script src="admin.js"></script>

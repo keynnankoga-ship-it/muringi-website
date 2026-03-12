@@ -1,32 +1,9 @@
-async function loadAffirmation(){
-
-const res = await fetch("/affirmations")
-
-const affirmations = await res.json()
-
-const container = document.getElementById("affirmation-text")
-
-const today = new Date()
-
-const start = new Date(today.getFullYear(),0,0)
-
-const diff = today-start
-
-const day = Math.floor(diff/(1000*60*60*24))
-
-const index = day%affirmations.length
-
-container.innerText = affirmations[index].text
-
-}
-
 async function loadSongs(){
 
-const res = await fetch("/songs")
+const res=await fetch("/songs")
+const songs=await res.json()
 
-const songs = await res.json()
-
-const playlist = document.getElementById("playlist")
+const playlist=document.getElementById("playlist")
 
 playlist.innerHTML=""
 
@@ -44,7 +21,9 @@ div.innerHTML=`
 
 <p>${song.artist}</p>
 
-<audio controls src="${song.audio}"></audio>
+<audio controls>
+<source src="${song.audio}" type="audio/mpeg">
+</audio>
 
 `
 
@@ -54,11 +33,14 @@ playlist.appendChild(div)
 
 }
 
+/* SONG OF DAY */
+
 async function loadSongOfDay(){
 
 const res=await fetch("/song-of-the-day")
-
 const song=await res.json()
+
+if(!song.title)return
 
 const container=document.getElementById("dailySong")
 
@@ -70,35 +52,50 @@ container.innerHTML=`
 
 <p>${song.artist}</p>
 
-<audio controls src="${song.audio}"></audio>
+<audio controls>
+<source src="${song.audio}">
+</audio>
 
 `
 
 }
 
-async function loadDateIdeas(){
+/* GALLERY */
 
-const res=await fetch("/dateIdeas")
+async function loadGallery(){
 
-const ideas=await res.json()
+const res=await fetch("/gallery")
+const photos=await res.json()
 
-const container=document.getElementById("dateIdeas")
+const gallery=document.getElementById("photoGallery")
+
+gallery.innerHTML=""
+
+photos.forEach(photo=>{
+
+const img=document.createElement("img")
+img.src=photo.url
+gallery.appendChild(img)
+
+})
+
+}
+
+/* PLAYLISTS */
+
+async function loadPlaylists(){
+
+const res=await fetch("/playlists")
+const playlists=await res.json()
+
+const container=document.getElementById("spotify")
 
 container.innerHTML=""
 
-ideas.forEach(idea=>{
+playlists.forEach(p=>{
 
 const div=document.createElement("div")
-
-div.className="date-card"
-
-div.innerHTML=`
-
-<h3>${idea.title}</h3>
-
-<p>${idea.description}</p>
-
-`
+div.innerHTML=p.embed
 
 container.appendChild(div)
 
@@ -106,38 +103,11 @@ container.appendChild(div)
 
 }
 
-async function loadGallery(){
-
-const res=await fetch("/gallery")
-
-const photos=await res.json()
-
-const gallery=document.getElementById("photoGallery")
-
-gallery.innerHTML=""
-
-photos.forEach(p=>{
-
-const img=document.createElement("img")
-
-img.src=p.url
-
-gallery.appendChild(img)
-
-})
-
-}
-
 document.addEventListener("DOMContentLoaded",()=>{
 
-loadAffirmation()
-
 loadSongs()
-
 loadSongOfDay()
-
-loadDateIdeas()
-
 loadGallery()
+loadPlaylists()
 
 })
