@@ -32,7 +32,11 @@ async function loadAffirmation() {
     const dayOfYear = Math.floor(diff / oneDay);
 
     const index = dayOfYear % affirmations.length;
-    container.innerText = affirmations[index].text;
+    const todayAffirmation = affirmations[index];
+
+    // Works whether the array contains strings or objects with .text
+    container.innerText =
+      todayAffirmation.text || todayAffirmation || "You are amazing and today will be a good day ❤️";
 
   } catch {
     container.innerText = "You are amazing and today will be a good day ❤️";
@@ -202,40 +206,16 @@ async function loadGallery() {
 
   /* PUBLIC GALLERY FALLBACK */
 
-  const publicPhotos = [
-    "/gallery/gallery1.jpeg",
-    "/gallery/gallery2.jpeg",
-    "/gallery/gallery3.jpeg",
-    "/gallery/gallery4.jpeg",
-    "/gallery/gallery5.jpeg",
-    "/gallery/gallery6.jpeg",
-    "/gallery/gallery7.jpeg",
-    "/gallery/gallery8.jpeg",
-    "/gallery/gallery9.jpeg",
-    "/gallery/gallery10.jpeg",
-    "/gallery/gallery11.jpeg",
-    "/gallery/gallery12.jpeg",
-    "/gallery/gallery13.jpeg",
-    "/gallery/gallery14.jpeg",
-    "/gallery/gallery15.jpeg",
-    "/gallery/gallery16.jpeg",
-    "/gallery/gallery17.jpeg",
-    "/gallery/gallery18.jpeg",
-    "/gallery/gallery19.jpeg",
-    "/gallery/gallery20.jpeg",
-    "/gallery/gallery21.jpeg",
-    "/gallery/gallery22.jpeg",
-    "/gallery/gallery23.jpeg",
-    "/gallery/gallery24.jpeg"
-  ];
+  const publicPhotos = [];
+  for (let i = 1; i <= 24; i++) {
+    publicPhotos.push(`/gallery/gallery${i}.jpeg`);
+  }
 
   publicPhotos.forEach(src => {
-
     const img = document.createElement("img");
     img.src = src;
 
     container.appendChild(img);
-
   });
 
   enableGalleryLightbox();
