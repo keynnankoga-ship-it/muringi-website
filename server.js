@@ -266,6 +266,20 @@ cron.schedule("0 8 * * *", () => {
 });
 
 /* =========================
+   TEST AFFIRMATION ROUTE
+========================= */
+app.get("/test-affirmation", async (req, res) => {
+  try {
+    await sendDailyAffirmations();
+    res.json({ success: true, message: "Affirmations sent!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Failed to send affirmations" });
+  }
+});
+
+
+/* =========================
    FIREBASE CONFIG
 ========================= */
 app.get("/firebase-config", (req, res) => {
