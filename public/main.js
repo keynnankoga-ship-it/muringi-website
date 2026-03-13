@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSongs();
   loadDateIdeas();
   loadGallery();
+
+  // Auto-refresh every 15 seconds
+  setInterval(loadSongs, 15000);
+  setInterval(loadDateIdeas, 15000);
+  setInterval(loadGallery, 15000);
 });
 
 
@@ -31,12 +36,11 @@ async function loadAffirmation() {
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
 
-    const index = dayOfYear % affirmations.length;
-    const todayAffirmation = affirmations[index];
+    const todayAffirmation = affirmations[dayOfYear % affirmations.length];
 
     // Works whether the array contains strings or objects with .text
     container.innerText =
-      (todayAffirmation.text || todayAffirmation) || "You are amazing and today will be a good day ❤️";
+      todayAffirmation.text || todayAffirmation || "You are amazing and today will be a good day ❤️";
 
   } catch {
     container.innerText = "You are amazing and today will be a good day ❤️";
@@ -46,7 +50,6 @@ async function loadAffirmation() {
 
 /* =========================
    SONGS (Playlist + Song of Day)
-   with play button overlay
 ========================= */
 async function loadSongs() {
   const container = document.getElementById("playlist");
@@ -61,45 +64,25 @@ async function loadSongs() {
     songs.forEach(song => {
       const cover = song.cover?.startsWith("/") ? song.cover : "/" + song.cover;
       const audioPath = song.file || song.audio || "";
-      const audioSrc = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
+      const audio = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
 
       const div = document.createElement("div");
       div.className = "song";
 
       div.innerHTML = `
-        <div class="cover-container">
-          <img src="${cover}" width="180" class="song-cover">
-          <button class="play-btn">▶️</button>
-        </div>
+        <img src="${cover}" width="180">
         <h3>${song.title}</h3>
         <p>${song.artist}</p>
-        <audio src="${audioSrc}"></audio>
+        <audio controls style="width:180px;">
+          <source src="${audio}" type="audio/mpeg">
+          Your browser does not support audio
+        </audio>
       `;
 
       container.appendChild(div);
-
-      const audio = div.querySelector("audio");
-      const playBtn = div.querySelector(".play-btn");
-
-      playBtn.onclick = () => {
-        // Pause all other audios
-        document.querySelectorAll("audio").forEach(a => {
-          if (a !== audio) a.pause();
-        });
-
-        if (audio.paused) {
-          audio.play();
-          playBtn.textContent = "⏸️";
-        } else {
-          audio.pause();
-          playBtn.textContent = "▶️";
-        }
-      };
-
-      audio.onended = () => {
-        playBtn.textContent = "▶️";
-      };
     });
+
+    enableAudioControl();
 
     // Song of the Day
     const dayRes = await fetch("/song-of-the-day");
@@ -109,42 +92,38 @@ async function loadSongs() {
     if (daySong && dailyContainer) {
       const cover = daySong.cover?.startsWith("/") ? daySong.cover : "/" + daySong.cover;
       const audioPath = daySong.file || daySong.audio || "";
-      const audioSrc = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
+      const audio = audioPath.startsWith("/") ? audioPath : "/music/" + audioPath;
 
       dailyContainer.innerHTML = `
         <div class="song">
-          <div class="cover-container">
-            <img src="${cover}" width="180" class="song-cover">
-            <button class="play-btn">▶️</button>
-          </div>
+          <img src="${cover}" width="180">
           <h3>${daySong.title}</h3>
           <p>${daySong.artist}</p>
-          <audio src="${audioSrc}"></audio>
+          <audio controls style="width:180px;">
+            <source src="${audio}" type="audio/mpeg">
+          </audio>
         </div>
       `;
-
-      const audio = dailyContainer.querySelector("audio");
-      const playBtn = dailyContainer.querySelector(".play-btn");
-
-      playBtn.onclick = () => {
-        document.querySelectorAll("audio").forEach(a => { if (a !== audio) a.pause(); });
-        if (audio.paused) {
-          audio.play();
-          playBtn.textContent = "⏸️";
-        } else {
-          audio.pause();
-          playBtn.textContent = "▶️";
-        }
-      };
-
-      audio.onended = () => {
-        playBtn.textContent = "▶️";
-      };
     }
 
   } catch (err) {
     console.error("Song loading error:", err);
   }
+}
+
+
+/* =========================
+   AUTO PAUSE OTHER SONGS
+========================= */
+function enableAudioControl() {
+  const audios = document.querySelectorAll("audio");
+  audios.forEach(audio => {
+    audio.onplay = () => {
+      audios.forEach(other => {
+        if (other !== audio) other.pause();
+      });
+    };
+  });
 }
 
 
@@ -164,10 +143,12 @@ async function loadDateIdeas() {
     ideas.forEach(idea => {
       const div = document.createElement("div");
       div.className = "date-card";
+
       div.innerHTML = `
         <h3>${idea.title}</h3>
         <p>${idea.description}</p>
       `;
+
       container.appendChild(div);
     });
 
