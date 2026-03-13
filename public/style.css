@@ -342,3 +342,29 @@ MOBILE
     width: 140px;
   }
 }
+ #playlist{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:30px;
+}
+
+.song{
+text-align:center;
+}
+
+.song audio{
+width:100%;
+margin-top:10px;
+}
+
+#photoGallery{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:20px;
+}
+
+#photoGallery img{
+width:100%;
+border-radius:10px;
+cursor:pointer;
+}

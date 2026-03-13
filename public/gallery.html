@@ -2,14 +2,12 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Gallery</title>
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
@@ -23,87 +21,98 @@
 
 <div class="gallery" id="galleryContainer"></div>
 
-<!-- Lightbox for viewing images -->
+<!-- Lightbox -->
 <div id="lightbox" class="lightbox" style="display:none;">
   <img src="" id="lightbox-img">
 </div>
 
 <script>
+
 /* =========================
-   LOAD GALLERY
+   LOAD GALLERY IMAGES
 ========================= */
-async function loadGallery() {
-  try {
-    const res = await fetch("/gallery");
-    const photos = await res.json();
+function loadGallery() {
 
-    const container = document.getElementById("galleryContainer");
-    container.innerHTML = "";
+  const container = document.getElementById("galleryContainer");
+  container.innerHTML = "";
 
-    photos.forEach(photo => {
-      const img = document.createElement("img");
-      img.src = photo.url;
-      img.alt = "Gallery Photo";
-      img.style.cursor = "pointer";
+  const totalPhotos = 24; // number of images in folder
 
-      img.addEventListener("click", () => {
-        const lightbox = document.getElementById("lightbox");
-        const lightboxImg = document.getElementById("lightbox-img");
-        lightbox.style.display = "flex";
-        lightboxImg.src = photo.url;
-      });
+  for (let i = 1; i <= totalPhotos; i++) {
 
-      container.appendChild(img);
+    const img = document.createElement("img");
+    img.src = `/gallery/gallery${i}.jpeg`;
+    img.alt = "Gallery Photo";
+    img.style.cursor = "pointer";
+
+    img.addEventListener("click", () => {
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImg = document.getElementById("lightbox-img");
+
+      lightbox.style.display = "flex";
+      lightboxImg.src = img.src;
     });
-  } catch (err) {
-    console.error(err);
-    document.getElementById("galleryContainer").innerHTML =
-      "<p>Failed to load gallery.</p>";
+
+    container.appendChild(img);
   }
 }
 
 /* =========================
-   LIGHTBOX CLOSE
+   CLOSE LIGHTBOX
 ========================= */
 document.getElementById("lightbox").addEventListener("click", () => {
   document.getElementById("lightbox").style.display = "none";
 });
 
+
 /* =========================
-   ENABLE SWIPE FOR MOBILE
+   SWIPE / DRAG SCROLL
 ========================= */
 function enableSwipeGallery() {
+
   const gallery = document.getElementById("galleryContainer");
-  if (!gallery) return;
 
   let isDown = false;
   let startX;
   let scrollLeft;
 
-  gallery.addEventListener("mousedown", e => {
+  gallery.addEventListener("mousedown", (e) => {
     isDown = true;
     startX = e.pageX - gallery.offsetLeft;
     scrollLeft = gallery.scrollLeft;
   });
 
-  gallery.addEventListener("mouseleave", () => isDown = false);
-  gallery.addEventListener("mouseup", () => isDown = false);
-  gallery.addEventListener("mousemove", e => {
+  gallery.addEventListener("mouseleave", () => {
+    isDown = false;
+  });
+
+  gallery.addEventListener("mouseup", () => {
+    isDown = false;
+  });
+
+  gallery.addEventListener("mousemove", (e) => {
     if (!isDown) return;
+
     e.preventDefault();
+
     const x = e.pageX - gallery.offsetLeft;
     const walk = (x - startX) * 2;
+
     gallery.scrollLeft = scrollLeft - walk;
   });
 }
+
 
 /* =========================
    INIT
 ========================= */
 document.addEventListener("DOMContentLoaded", () => {
+
   loadGallery();
   enableSwipeGallery();
+
 });
+
 </script>
 
 </body>

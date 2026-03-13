@@ -57,6 +57,13 @@ token:String,
 createdAt:{type:Date,default:Date.now}
 })
 
+/* NEW MODEL */
+
+const Affirmation = mongoose.model("Affirmation",{
+text:String,
+createdAt:{type:Date,default:Date.now}
+})
+
 /* ADMIN AUTH */
 
 function adminAuth(req,res,next){
@@ -66,7 +73,6 @@ return next()
 }
 
 res.status(401).json({error:"Unauthorized"})
-
 }
 
 /* ADMIN LOGIN */
@@ -76,11 +82,8 @@ app.post("/admin-login",(req,res)=>{
 const {password} = req.body
 
 if(password === process.env.ADMIN_PASS){
-
 req.session.admin = true
-
 return res.json({success:true})
-
 }
 
 res.status(401).json({success:false})
@@ -100,6 +103,28 @@ res.json({logged:false})
 app.post("/admin-logout",(req,res)=>{
 
 req.session.destroy()
+
+res.json({success:true})
+
+})
+
+/* AFFIRMATIONS */
+
+app.get("/affirmations",async(req,res)=>{
+res.json(await Affirmation.find().sort({createdAt:-1}))
+})
+
+app.post("/admin/add-affirmation",adminAuth,async(req,res)=>{
+
+await new Affirmation(req.body).save()
+
+res.json({success:true})
+
+})
+
+app.delete("/admin/delete-affirmation/:id",adminAuth,async(req,res)=>{
+
+await Affirmation.findByIdAndDelete(req.params.id)
 
 res.json({success:true})
 
@@ -234,14 +259,12 @@ res.json(await Subscription.find().sort({createdAt:-1}))
 app.get("/firebase-config",(req,res)=>{
 
 res.json({
-
 apiKey:process.env.FIREBASE_API_KEY,
 authDomain:process.env.FIREBASE_PROJECT_ID+".firebaseapp.com",
 projectId:process.env.FIREBASE_PROJECT_ID,
 messagingSenderId:process.env.FIREBASE_SENDER_ID,
 appId:process.env.FIREBASE_APP_ID,
 vapidKey:process.env.FIREBASE_VAPID_KEY
-
 })
 
 })
