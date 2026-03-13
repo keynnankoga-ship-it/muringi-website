@@ -1,194 +1,282 @@
-/* =========================
-   DAILY AFFIRMATION
-========================= */
-async function loadAffirmation() {
-  const container = document.getElementById("affirmation-text");
-  if (!container) return;
+require("dotenv").config();
 
-  try {
-    const res = await fetch("/affirmations");
-    const affirmations = await res.json();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const session = require("express-session");
+const nodemailer = require("nodemailer"); // for emails
+const twilio = require("twilio");         // for SMS
 
-    if (!affirmations || affirmations.length === 0) {
-      container.innerText = "You are amazing and today will be a good day ❤️";
-      return;
-    }
+const app = express();
 
-    const today = new Date();
-    const start = new Date(today.getFullYear(), 0, 0);
-    const diff = today - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    const dayOfYear = Math.floor(diff / oneDay);
+app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
 
-    const index = dayOfYear % affirmations.length;
-    container.innerText = affirmations[index].text;
-  } catch (err) {
-    container.innerText = "You are amazing and today will be a good day ❤️";
+/* ---------------------------
+   SESSION
+--------------------------- */
+app.use(session({
+  secret: process.env.ADMIN_PASS,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false }
+}));
+
+/* ---------------------------
+   DATABASE
+--------------------------- */
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
+
+/* ---------------------------
+   MODELS
+--------------------------- */
+const Song = mongoose.model("Song", {
+  title: String,
+  artist: String,
+  audio: String,
+  cover: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Gallery = mongoose.model("Gallery", {
+  url: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const DateIdea = mongoose.model("DateIdea", {
+  title: String,
+  description: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Playlist = mongoose.model("Playlist", {
+  embed: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Subscription = mongoose.model("Subscription", {
+  token: String,
+  email: String,
+  phone: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Affirmation = mongoose.model("Affirmation", {
+  text: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+/* ---------------------------
+   ADMIN AUTH
+--------------------------- */
+function adminAuth(req, res, next) {
+  if (req.session && req.session.admin) return next();
+  res.status(401).json({ error: "Unauthorized" });
+}
+
+/* ---------------------------
+   ADMIN LOGIN
+--------------------------- */
+app.post("/admin-login", (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ADMIN_PASS) {
+    req.session.admin = true;
+    return res.json({ success: true });
   }
-}
+  res.status(401).json({ success: false });
+});
 
+app.get("/admin-check", (req, res) => {
+  if (req.session && req.session.admin) return res.json({ logged: true });
+  res.json({ logged: false });
+});
 
-/* =========================
-   SONGS (Playlist + Song of the Day)
-========================= */
-async function loadSongs() {
-  const container = document.getElementById("playlist");
-  if (!container) return;
+app.post("/admin-logout", (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
 
-  try {
-    const res = await fetch("/songs");
-    const songs = await res.json();
+/* ---------------------------
+   AFFIRMATIONS
+--------------------------- */
+app.get("/affirmations", async (req, res) => {
+  res.json(await Affirmation.find().sort({ createdAt: -1 }));
+});
 
-    container.innerHTML = "";
+app.post("/admin/add-affirmation", adminAuth, async (req, res) => {
+  await new Affirmation(req.body).save();
+  res.json({ success: true });
+});
 
-    songs.forEach(song => {
-      const cover = song.cover?.startsWith("/") ? song.cover : "/" + song.cover;
-      const audioPath = song.file || song.audio || "";
-      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
+app.delete("/admin/delete-affirmation/:id", adminAuth, async (req, res) => {
+  await Affirmation.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
 
-      const div = document.createElement("div");
-      div.className = "song";
+/* ---------------------------
+   SONGS
+--------------------------- */
+app.get("/songs", async (req, res) => {
+  res.json(await Song.find().sort({ createdAt: -1 }));
+});
 
-      div.innerHTML = `
-        <img src="${cover}" width="180">
-        <h3>${song.title}</h3>
-        <p>${song.artist}</p>
-        <audio controls style="width:180px;">
-          <source src="${audio}" type="audio/mpeg">
-        </audio>
-      `;
+app.post("/admin/add-song", adminAuth, async (req, res) => {
+  await new Song(req.body).save();
+  res.json({ success: true });
+});
 
-      container.appendChild(div);
-    });
+app.delete("/admin/delete-song/:id", adminAuth, async (req, res) => {
+  await Song.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
 
-    enableAudioControl();
+app.get("/song-of-the-day", async (req, res) => {
+  const songs = await Song.find();
+  if (!songs.length) return res.json({});
+  const index = new Date().getDate() % songs.length;
+  res.json(songs[index]);
+});
 
-    // Song of the Day
-    const dayRes = await fetch("/song-of-the-day");
-    const daySong = await dayRes.json();
-    const dailyContainer = document.getElementById("dailySong");
-
-    if (daySong && dailyContainer) {
-      const cover = daySong.cover?.startsWith("/") ? daySong.cover : "/" + daySong.cover;
-      const audioPath = daySong.file || daySong.audio || "";
-      const audio = audioPath.startsWith("/") ? audioPath : "/" + audioPath;
-
-      dailyContainer.innerHTML = `
-        <div class="song">
-          <img src="${cover}" width="180">
-          <h3>${daySong.title}</h3>
-          <p>${daySong.artist}</p>
-          <audio controls style="width:180px;">
-            <source src="${audio}" type="audio/mpeg">
-          </audio>
-        </div>
-      `;
-    }
-  } catch (err) {
-    console.error("Song loading error:", err);
-  }
-}
-
-/* =========================
-   AUTO PAUSE OTHER SONGS
-========================= */
-function enableAudioControl() {
-  const audios = document.querySelectorAll("audio");
-  audios.forEach(audio => {
-    audio.onplay = () => {
-      audios.forEach(other => {
-        if (other !== audio) other.pause();
-      });
-    };
-  });
-}
-
-/* =========================
+/* ---------------------------
    GALLERY
-========================= */
-async function loadGallery() {
-  const container = document.getElementById("photoGallery");
-  if (!container) return;
-  container.innerHTML = "";
+--------------------------- */
+app.get("/gallery", async (req, res) => {
+  res.json(await Gallery.find().sort({ createdAt: -1 }));
+});
 
-  try {
-    const res = await fetch("/gallery");
-    const photos = await res.json();
+app.post("/admin/add-photo", adminAuth, async (req, res) => {
+  await new Gallery(req.body).save();
+  res.json({ success: true });
+});
 
-    photos.forEach(photo => {
-      const img = document.createElement("img");
-      img.src = photo.url;
-      container.appendChild(img);
-    });
-  } catch (err) {
-    console.error("Gallery DB error:", err);
+app.delete("/admin/delete-photo/:id", adminAuth, async (req, res) => {
+  await Gallery.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+/* ---------------------------
+   DATE IDEAS
+--------------------------- */
+app.get("/dateIdeas", async (req, res) => {
+  res.json(await DateIdea.find().sort({ createdAt: -1 }));
+});
+
+app.post("/admin/add-date", adminAuth, async (req, res) => {
+  await new DateIdea(req.body).save();
+  res.json({ success: true });
+});
+
+app.delete("/admin/delete-date/:id", adminAuth, async (req, res) => {
+  await DateIdea.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+/* ---------------------------
+   PLAYLISTS
+--------------------------- */
+app.get("/playlists", async (req, res) => {
+  res.json(await Playlist.find().sort({ createdAt: -1 }));
+});
+
+app.post("/admin/add-playlist", adminAuth, async (req, res) => {
+  await new Playlist(req.body).save();
+  res.json({ success: true });
+});
+
+app.delete("/admin/delete-playlist/:id", adminAuth, async (req, res) => {
+  await Playlist.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
+/* ---------------------------
+   SUBSCRIPTIONS
+--------------------------- */
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or use SendGrid, etc.
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+
+app.post("/subscribe", async (req, res) => {
+  const { token, email, phone } = req.body;
+
+  if (!token) return res.status(400).json({ error: "Missing token" });
+
+  const exists = await Subscription.findOne({ token });
+  if (!exists) {
+    await new Subscription({ token, email, phone }).save();
   }
 
-  // Add public gallery photos
-  const publicPhotos = [
-    "/gallery/gallery1.jpeg",
-    "/gallery/gallery2.jpeg",
-    "/gallery/gallery3.jpeg",
-    "/gallery/gallery4.jpeg",
-    "/gallery/gallery5.jpeg",
-    "/gallery/gallery6.jpeg",
-    "/gallery/gallery7.jpeg",
-    "/gallery/gallery8.jpeg",
-    "/gallery/gallery9.jpeg",
-    "/gallery/gallery10.jpeg",
-    "/gallery/gallery11.jpeg",
-    "/gallery/gallery12.jpeg",
-    "/gallery/gallery13.jpeg",
-    "/gallery/gallery14.jpeg",
-    "/gallery/gallery15.jpeg",
-    "/gallery/gallery16.jpeg",
-    "/gallery/gallery17.jpeg",
-    "/gallery/gallery18.jpeg",
-    "/gallery/gallery19.jpeg",
-    "/gallery/gallery20.jpeg",
-    "/gallery/gallery21.jpeg",
-    "/gallery/gallery22.jpeg",
-    "/gallery/gallery23.jpeg",
-    "/gallery/gallery24.jpeg"
-  ];
+  // Get today's affirmation
+  const affirmations = await Affirmation.find().sort({ createdAt: -1 });
+  const today = new Date();
+  const start = new Date(today.getFullYear(), 0, 0);
+  const diff = today - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
 
-  publicPhotos.forEach(src => {
-    const img = document.createElement("img");
-    img.src = src;
-    container.appendChild(img);
+  const todayAffirmation = affirmations[dayOfYear % affirmations.length];
+  const messageText = todayAffirmation ? todayAffirmation.text : "You are amazing and today will be a good day ❤️";
+
+  // Send Email
+  if (email) {
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Your Daily Affirmation ❤️",
+        text: messageText
+      });
+    } catch (err) {
+      console.error("Email send error:", err);
+    }
+  }
+
+  // Send SMS
+  if (phone) {
+    try {
+      await twilioClient.messages.create({
+        body: messageText,
+        from: process.env.TWILIO_PHONE,
+        to: phone
+      });
+    } catch (err) {
+      console.error("SMS send error:", err);
+    }
+  }
+
+  res.json({ success: true });
+});
+
+app.get("/admin/subscriptions", adminAuth, async (req, res) => {
+  res.json(await Subscription.find().sort({ createdAt: -1 }));
+});
+
+/* ---------------------------
+   FIREBASE CONFIG
+--------------------------- */
+app.get("/firebase-config", (req, res) => {
+  res.json({
+    apiKey: process.env.FIREBASE_API_KEY,
+    authDomain: process.env.FIREBASE_PROJECT_ID + ".firebaseapp.com",
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    messagingSenderId: process.env.FIREBASE_SENDER_ID,
+    appId: process.env.FIREBASE_APP_ID,
+    vapidKey: process.env.FIREBASE_VAPID_KEY
   });
+});
 
-  enableGalleryLightbox();
-}
-
-/* =========================
-   LIGHTBOX
-========================= */
-function enableGalleryLightbox() {
-  const gallery = document.getElementById("photoGallery");
-  if (!gallery) return;
-
-  const lightbox = document.getElementById("lightbox");
-  const lightboxImg = document.getElementById("lightbox-img");
-
-  gallery.querySelectorAll("img").forEach(img => {
-    img.onclick = () => {
-      lightbox.style.display = "flex";
-      lightboxImg.src = img.src;
-    };
-  });
-
-  lightbox.onclick = () => {
-    lightbox.style.display = "none";
-  };
-}
-
-/* =========================
-   PAGE LOAD
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  loadAffirmation();
-  loadSongs();
-  loadDateIdeas();
-  loadGallery();
+/* ---------------------------
+   SERVER
+--------------------------- */
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
