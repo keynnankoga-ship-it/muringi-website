@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadDateIdeas();
   loadGallery();
 
-  // Auto-refresh every 15 seconds
+  // Optional: auto-refresh user interface
   setInterval(loadSongs, 15000);
   setInterval(loadDateIdeas, 15000);
   setInterval(loadGallery, 15000);
@@ -38,11 +38,19 @@ async function loadAffirmation() {
 
     const todayAffirmation = affirmations[dayOfYear % affirmations.length];
 
-    // Works whether the array contains strings or objects with .text
-    container.innerText =
-      todayAffirmation.text || todayAffirmation || "You are amazing and today will be a good day ❤️";
+    // Safely display affirmation text
+    if (typeof todayAffirmation === "string") {
+      container.innerText = todayAffirmation;
+    } else if (todayAffirmation.text) {
+      container.innerText = todayAffirmation.text;
+    } else if (todayAffirmation.affirmation) {
+      container.innerText = todayAffirmation.affirmation;
+    } else {
+      container.innerText = "You are amazing and today will be a good day ❤️";
+    }
 
-  } catch {
+  } catch (err) {
+    console.error("Affirmation loading error:", err);
     container.innerText = "You are amazing and today will be a good day ❤️";
   }
 }
