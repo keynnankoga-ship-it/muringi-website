@@ -34,6 +34,7 @@ mongoose.connect(process.env.MONGO_URI)
 /* =========================
    MODELS
 ========================= */
+
 const Song = mongoose.model("Song", {
   title: String,
   artist: String,
@@ -73,6 +74,7 @@ const Affirmation = mongoose.model("Affirmation", {
 /* =========================
    ADMIN AUTH
 ========================= */
+
 function adminAuth(req, res, next) {
   if (req.session && req.session.admin) return next();
   res.status(401).json({ error: "Unauthorized" });
@@ -81,12 +83,15 @@ function adminAuth(req, res, next) {
 /* =========================
    ADMIN LOGIN
 ========================= */
+
 app.post("/admin-login", (req, res) => {
   const { password } = req.body;
+
   if (password === process.env.ADMIN_PASS) {
     req.session.admin = true;
     return res.json({ success: true });
   }
+
   res.status(401).json({ success: false });
 });
 
@@ -103,6 +108,7 @@ app.post("/admin-logout", (req, res) => {
 /* =========================
    AFFIRMATIONS ROUTES
 ========================= */
+
 app.get("/affirmations", async (req, res) => {
   res.json(await Affirmation.find().sort({ createdAt: -1 }));
 });
@@ -120,6 +126,7 @@ app.delete("/admin/delete-affirmation/:id", adminAuth, async (req, res) => {
 /* =========================
    SONGS ROUTES
 ========================= */
+
 app.get("/songs", async (req, res) => {
   res.json(await Song.find().sort({ createdAt: -1 }));
 });
@@ -136,7 +143,9 @@ app.delete("/admin/delete-song/:id", adminAuth, async (req, res) => {
 
 app.get("/song-of-the-day", async (req, res) => {
   const songs = await Song.find();
+
   if (!songs.length) return res.json({});
+
   const index = new Date().getDate() % songs.length;
   res.json(songs[index]);
 });
@@ -144,6 +153,7 @@ app.get("/song-of-the-day", async (req, res) => {
 /* =========================
    GALLERY ROUTES
 ========================= */
+
 app.get("/gallery", async (req, res) => {
   res.json(await Gallery.find().sort({ createdAt: -1 }));
 });
@@ -161,6 +171,7 @@ app.delete("/admin/delete-photo/:id", adminAuth, async (req, res) => {
 /* =========================
    DATE IDEAS ROUTES
 ========================= */
+
 app.get("/dateIdeas", async (req, res) => {
   res.json(await DateIdea.find().sort({ createdAt: -1 }));
 });
@@ -176,8 +187,9 @@ app.delete("/admin/delete-date/:id", adminAuth, async (req, res) => {
 });
 
 /* =========================
-   PLAYLISTS ROUTES
+   PLAYLIST ROUTES
 ========================= */
+
 app.get("/playlists", async (req, res) => {
   res.json(await Playlist.find().sort({ createdAt: -1 }));
 });
@@ -195,9 +207,14 @@ app.delete("/admin/delete-playlist/:id", adminAuth, async (req, res) => {
 /* =========================
    SUBSCRIBE ROUTE
 ========================= */
+
 app.post("/subscribe", async (req, res) => {
+
   const { name, email, phone } = req.body;
-  if (!email && !phone) return res.status(400).json({ error: "Email or phone required" });
+
+  if (!email && !phone) {
+    return res.status(400).json({ error: "Email or phone required" });
+  }
 
   const exists = await Subscription.findOne({
     $or: [{ email }, { phone }]
@@ -207,7 +224,11 @@ app.post("/subscribe", async (req, res) => {
     await new Subscription({ name, email, phone }).save();
   }
 
-  res.json({ success: true, message: "Subscribed successfully!" });
+  res.json({
+    success: true,
+    message: "Subscribed successfully!"
+  });
+
 });
 
 app.get("/admin/subscriptions", adminAuth, async (req, res) => {
@@ -215,10 +236,9 @@ app.get("/admin/subscriptions", adminAuth, async (req, res) => {
 });
 
 /* =========================
-   SEND DAILY AFFIRMATIONS (EMAIL + SMS)
+   EMAIL CONFIG
 ========================= */
 
-// Nodemailer transporter for email
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -229,65 +249,140 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Twilio client for SMS
-const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
+/* =========================
+   TWILIO CONFIG
+========================= */
+
+let twilioClient = null;
+
+if (process.env.TWILIO_SID && process.env.TWILIO_AUTH) {
+  twilioClient = twilio(
+    process.env.TWILIO_SID,
+    process.env.TWILIO_AUTH
+  );
+}
+
+/* =========================
+   SEND DAILY AFFIRMATIONS
+========================= */
 
 async function sendDailyAffirmations() {
+
   const subscribers = await Subscription.find();
   const affirmations = await Affirmation.find().sort({ createdAt: -1 });
-  if (!affirmations.length) return;
+
+  if (!affirmations.length) {
+    console.log("No affirmations found");
+    return;
+  }
 
   const today = new Date();
   const index = today.getDate() % affirmations.length;
-  const todayAffirmation = affirmations[index].text;
+
+  const todayAffirmation =
+    affirmations[index]?.text || "You are amazing ❤️";
 
   for (const sub of subscribers) {
-    // Email
+
+    /* EMAIL */
+
     if (sub.email) {
-      await transporter.sendMail({
-        from: `"Daily Affirmation" <${process.env.EMAIL_USER}>`,
-        to: sub.email,
-        subject: "Your Daily Affirmation ❤️",
-        text: todayAffirmation
-      });
+
+      try {
+
+        await transporter.sendMail({
+          from: `"Daily Affirmation" <${process.env.EMAIL_USER}>`,
+          to: sub.email,
+          subject: "Your Daily Affirmation ❤️",
+          text: todayAffirmation
+        });
+
+        console.log("Email sent to:", sub.email);
+
+      } catch (err) {
+
+        console.log("Email failed:", err.message);
+
+      }
+
     }
 
-    // SMS via Twilio
-    if (sub.phone && process.env.TWILIO_SID && process.env.TWILIO_AUTH && process.env.TWILIO_PHONE) {
-      await twilioClient.messages.create({
-        body: todayAffirmation,
-        from: process.env.TWILIO_PHONE,
-        to: sub.phone
-      });
+    /* SMS */
+
+    if (sub.phone && twilioClient && process.env.TWILIO_PHONE) {
+
+      try {
+
+        await twilioClient.messages.create({
+          body: todayAffirmation,
+          from: process.env.TWILIO_PHONE,
+          to: sub.phone
+        });
+
+        console.log("SMS sent to:", sub.phone);
+
+      } catch (err) {
+
+        console.log("SMS failed:", err.message);
+
+      }
+
     }
+
   }
 
-  console.log("Daily affirmations sent to subscribers!");
+  console.log("Daily affirmation sending process finished");
+
 }
 
-// Schedule daily at 8:00 AM
-cron.schedule("0 8 * * *", () => {
-  sendDailyAffirmations().catch(console.error);
-});
+/* =========================
+   CRON SCHEDULE
+========================= */
+
+cron.schedule(
+  "0 8 * * *",
+  () => {
+    sendDailyAffirmations().catch(console.error);
+  },
+  {
+    timezone: "Africa/Nairobi"
+  }
+);
 
 /* =========================
-   TEST AFFIRMATION ROUTE
+   TEST ROUTE
 ========================= */
-app.get("/test-affirmation", async (req, res) => {
-  try {
-    await sendDailyAffirmations();
-    res.json({ success: true, message: "Affirmations sent!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: "Failed to send affirmations" });
-  }
-});
 
+app.get("/test-affirmation", async (req, res) => {
+
+  try {
+
+    await sendDailyAffirmations();
+
+    res.json({
+      success: true,
+      message: "Affirmations sent!"
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+      error: "Failed to send affirmations"
+    });
+
+  }
+
+});
 
 /* =========================
    FIREBASE CONFIG
 ========================= */
+
 app.get("/firebase-config", (req, res) => {
+
   res.json({
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_PROJECT_ID + ".firebaseapp.com",
@@ -296,12 +391,15 @@ app.get("/firebase-config", (req, res) => {
     appId: process.env.FIREBASE_APP_ID,
     vapidKey: process.env.FIREBASE_VAPID_KEY
   });
+
 });
 
 /* =========================
    SERVER
 ========================= */
+
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
 });
